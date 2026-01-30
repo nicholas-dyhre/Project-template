@@ -1,0 +1,49 @@
+name: CI - Backend + Frontend + NSwag
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v3
+
+      # Set up .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      # Restore .NET dependencies
+      - name: Restore Backend
+        run: dotnet restore Backend/Backend.csproj
+
+      # Build Backend
+      - name: Build Backend
+        run: dotnet build Backend/Backend.csproj --configuration Debug
+
+      # Run NSwag to generate Angular client
+      - name: Generate Angular API client
+        run: dotnet nswag run Backend/nswag.json
+
+      # Setup Node.js for Angular
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # Install Angular frontend dependencies
+      - name: Install Frontend Dependencies
+        run: npm ci --prefix Frontend
+
+      # Build Angular frontend
+      - name: Build Frontend
+        run: npm run build --prefix Frontend
