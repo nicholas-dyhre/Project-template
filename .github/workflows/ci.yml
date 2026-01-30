@@ -14,36 +14,45 @@ jobs:
 
     steps:
       # Checkout the repository
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # Set up .NET SDK
+      # Set up .NET SDK 9.0
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'
 
-      # Restore .NET dependencies
+      # Restore backend dependencies
       - name: Restore Backend
         run: dotnet restore Backend/Backend.csproj
 
-      # Build Backend
+      # Build backend
       - name: Build Backend
         run: dotnet build Backend/Backend.csproj --configuration Debug
 
-      # Run NSwag to generate Angular client
-      - name: Generate Angular API client
-        run: dotnet nswag run Backend/nswag.json
+      # Restore .NET local tools (NSwag)
+      - name: Restore .NET Tools
+        run: |
+          cd Backend
+          dotnet tool restore
 
-      # Setup Node.js for Angular
+      # Generate Angular API client using NSwag local tool
+      - name: Generate Angular API Client
+        run: |
+          cd Backend
+          dotnet tool run nswag run nswag.json
+
+      # Set up Node.js for Angular
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # Install Angular frontend dependencies
+      # Install frontend dependencies
       - name: Install Frontend Dependencies
         run: npm ci --prefix Frontend
 
-      # Build Angular frontend
+      # Build frontend
       - name: Build Frontend
         run: npm run build --prefix Frontend
