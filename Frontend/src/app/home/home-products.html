@@ -3,51 +3,16 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <h3 class="text-3xl font-bold text-gray-900 text-center mb-12">Our Featured Products</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <!-- Product 1 -->
-      <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+      <div *ngFor="let product of products$() | async" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
         <div class="aspect-w-1 aspect-h-1 bg-gray-200">
-          <img src="https://via.placeholder.com/400x400?text=Product+1" alt="Handcrafted Wooden Bowl" class="w-full h-64 object-cover">
+          <img [src]="product.imageUrl || 'https://via.placeholder.com/400x400?text=No+Image'" [alt]="product.name" class="w-full h-64 object-cover">
         </div>
-        <div class="p-6">
-          <h4 class="text-xl font-semibold text-gray-900 mb-2">Handcrafted Wooden Bowl</h4>
-          <p class="text-gray-600 mb-4">Beautifully carved from sustainable hardwood, perfect for serving or display.</p>
-          <div class="flex justify-between items-center">
-            <span class="text-2xl font-bold text-gray-900">$45.00</span>
-            <button routerLink="/detail/1" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-              View Details
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 2 -->
-      <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-        <div class="aspect-w-1 aspect-h-1 bg-gray-200">
-          <img src="https://via.placeholder.com/400x400?text=Product+2" alt="Ceramic Vase" class="w-full h-64 object-cover">
-        </div>
-        <div class="p-6">
-          <h4 class="text-xl font-semibold text-gray-900 mb-2">Ceramic Vase</h4>
-          <p class="text-gray-600 mb-4">Elegant hand-thrown pottery, glazed with natural earth tones.</p>
-          <div class="flex justify-between items-center">
-            <span class="text-2xl font-bold text-gray-900">$32.00</span>
-            <button routerLink="/detail/2" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-              View Details
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 3 -->
-      <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-        <div class="aspect-w-1 aspect-h-1 bg-gray-200">
-          <img src="https://via.placeholder.com/400x400?text=Product+3" alt="Woven Basket" class="w-full h-64 object-cover">
-        </div>
-        <div class="p-6">
-          <h4 class="text-xl font-semibold text-gray-900 mb-2">Woven Basket</h4>
-          <p class="text-gray-600 mb-4">Intricately woven from natural fibers, both functional and beautiful.</p>
-          <div class="flex justify-between items-center">
-            <span class="text-2xl font-bold text-gray-900">$28.00</span>
-            <button routerLink="/detail/3" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+        <div class="p-6 flex flex-col flex-grow">
+          <h4 class="text-xl font-semibold text-gray-900 mb-2">{{ product.name }}</h4>
+          <p class="text-gray-600 mb-4 flex-grow">{{ product.description }}</p>
+          <div class="flex justify-between items-center mt-auto">
+            <span class="text-2xl font-bold text-gray-900">${{ product.price?.toFixed(2) }}</span>
+            <button [routerLink]="['/detail', product.id]" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
               View Details
             </button>
           </div>
