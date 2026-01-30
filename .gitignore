@@ -1,0 +1,26 @@
+# ==========================
+# Visual Studio / IDE files
+# ==========================
+.vs/
+*.user
+*.suo
+*.cache
+*.log
+
+# ==========================
+# Build output
+# ==========================
+bin/
+obj/
+
+# ==========================
+# Generated NSwag API client
+# ==========================
+Frontend/src/app/api/generated-api-client.ts
+
+# ==========================
+# Node / Angular
+# ==========================
+node_modules/
+dist/
+.angular/
