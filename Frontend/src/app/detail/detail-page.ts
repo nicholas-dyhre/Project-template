@@ -4,7 +4,7 @@ import { PageLayout } from '../components/page-layout/page-layout';
 import { DetailProduct } from './detail-product';
 import { DetailInfo } from './detail-info';
 import { ApiClient, IProduct, Product } from '../api/generated-api-client';
-import { Observable, switchMap } from 'rxjs';
+import { firstValueFrom, Observable, switchMap } from 'rxjs';
 import { BasketStateService } from '../../services/BasketStateService';
 
 @Component({
@@ -27,10 +27,12 @@ export class DetailPage implements OnInit {
     this.product$ = this.apiClient.products_GetProduct(id);
   }
 
-  addToCart(productId: number) {
-    console.log("add To basket");
-    this.basketStateService.basketId$.pipe(
-      switchMap(id => this.apiClient.basket_AddProductToBasket(id, productId))
-    ).subscribe();
+  async addToCart(productId: number): Promise<void> {
+    await firstValueFrom(
+      this.basketStateService.basketId$.pipe(
+        switchMap(id => this.apiClient.basket_AddProductToBasket(id, productId))
+      )
+    );
+    return void 0;
   }
 }
