@@ -1,7 +1,17 @@
 using Backend.Data;
+using Backend.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+/**
+ * Dependency injection
+ */
+
+builder.Services.AddTransient<IProductsService, ProductsService>();
+builder.Services.AddTransient<IBasketService, BasketService>();
+
+
 builder.Services.AddControllers();
 
 // Configure CORS based on environment

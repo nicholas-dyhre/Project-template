@@ -7,10 +7,10 @@ import { BusinessHours } from './business-hours';
 import { SocialMedia } from './social-media';
 
 @Component({
-  selector: 'app-contact',
+  selector: 'app-contact-page',
   imports: [PageLayout, ContactHero, ContactForm, ContactInfo, BusinessHours, SocialMedia],
-  templateUrl: './contact.html',
+  templateUrl: './contact-page.html',
 })
-export class Contact {
+export class ContactPage {
 
 }

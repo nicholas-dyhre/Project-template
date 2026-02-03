@@ -1,18 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PageLayout } from '../components/page-layout/page-layout';
 import { DetailProduct } from './detail-product';
 import { DetailInfo } from './detail-info';
 import { ApiClient, IProduct, Product } from '../api/generated-api-client';
-import { Observable } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
+import { BasketStateService } from '../../services/BasketStateService';
 
 @Component({
-  selector: 'app-detail',
+  selector: 'app-detail-page',
   imports: [PageLayout, DetailProduct, DetailInfo],
-  templateUrl: './detail.html',
+  templateUrl: './detail-page.html',
 })
-export class Detail implements OnInit {
+export class DetailPage implements OnInit {
   product$!: Observable<Product>;
+
+  private basketStateService = inject(BasketStateService);
 
   constructor(
     private route: ActivatedRoute,
@@ -22,5 +25,12 @@ export class Detail implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.params['id'];
     this.product$ = this.apiClient.products_GetProduct(id);
+  }
+
+  addToCart(productId: number) {
+    console.log("add To basket");
+    this.basketStateService.basketId$.pipe(
+      switchMap(id => this.apiClient.basket_AddProductToBasket(id, productId))
+    ).subscribe();
   }
 }

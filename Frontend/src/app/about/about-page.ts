@@ -6,10 +6,10 @@ import { AboutValues } from './about-values';
 import { AboutProcess } from './about-process';
 
 @Component({
-  selector: 'app-about',
+  selector: 'app-about-page',
   imports: [PageLayout, AboutHero, AboutStory, AboutValues, AboutProcess],
-  templateUrl: './about.html',
+  templateUrl: './about-page.html',
 })
-export class About {
+export class AboutPage {
 
 }

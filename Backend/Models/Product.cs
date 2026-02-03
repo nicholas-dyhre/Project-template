@@ -4,6 +4,7 @@ namespace Backend.Models;
 
 public class Product
 {
+    [Required]
     public int Id { get; set; }
 
     [Required]

@@ -7,11 +7,11 @@ import { ApiClient, IProduct } from '../api/generated-api-client';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-home-page',
   imports: [PageLayout, HomeHero, HomeProducts, HomeAbout],
-  templateUrl: './home.html',
+  templateUrl: './home-page.html',
 })
-export class Home implements OnInit {
+export class HomePage implements OnInit {
   products$!: Observable<IProduct[]>;
 
   constructor(private apiClient: ApiClient) {}
