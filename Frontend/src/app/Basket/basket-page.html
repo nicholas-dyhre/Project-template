@@ -1,56 +1,25 @@
 <app-page-layout>
   <section class="py-16 bg-gray-50 min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Your Basket</h2>
-      @if(basketProducts$ | async; as products) {
-      <!-- @if (basketItems$ | async; as basketItems) { -->
-        <!-- @if(basketItems.length > 0) { -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
+      <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center ">Your Basket</h2>
+      @if(basketItems$ | async; as basketItems) {
+          <div class="flex flex-col gap-4">
             <div
-              *ngFor="let product of products"
-              class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300"
+              *ngFor="let item of basketItems; trackBy: trackByBasketItem"
+              class="w-full"
             >
-              
-              
-                <div class="aspect-w-1 aspect-h-1 bg-gray-200">
-                  <img
-                    [src]="product.imageUrl || 'https://via.placeholder.com/400x400?text=No+Image'"
-                    [alt]="product.name"
-                    class="w-full h-64 object-cover"
-                  />
-                </div>
-                <div class="p-6 flex flex-col flex-grow">
-                  <h4 class="text-xl font-semibold text-gray-900 mb-2">{{ product.name }}</h4>
-                  <p class="text-gray-600 mb-4 flex-grow">{{ product.description }}</p>
-                  <div class="flex justify-between items-center mt-auto">
-                    <span class="text-2xl font-bold text-gray-900">${{ product?.price?.toFixed(2) }}</span>
-                    <div class="flex space-x-2">
-                      <button
-                        [routerLink]="['/detail', product.id]"
-                        class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors duration-200"
-                      >
-                        View
-                      </button>
-                      <button
-                        (click)="removeItem(product.id)"
-                        class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors duration-200"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              
-
+              <app-basket-item
+                [basketItem]="item"
+                [removeItem]="removeItem.bind(this)"
+                [updateQuantity]="updateQuantity.bind(this)"
+              />
             </div>
-            
           </div>
 
           <!-- Basket total and checkout -->
           <div class="mt-12 flex justify-end items-center space-x-6">
             <span class="text-2xl font-bold text-gray-900">
-              Total: ${{ calculateTotal(products).toFixed(2) }}
+              Total: ${{ calculateTotal(basketItems).toFixed(2) }}
             </span>
             <button
               (click)="checkout()"
@@ -59,7 +28,6 @@
               Proceed to Checkout
             </button>
           </div>
-        <!-- } -->
       }
 
         <ng-template #emptyBasket>
@@ -73,7 +41,6 @@
             </a>
           </div>
         </ng-template>
-      <!-- } -->
       
     </div>
   </section>

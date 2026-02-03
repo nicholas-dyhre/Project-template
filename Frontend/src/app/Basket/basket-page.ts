@@ -5,10 +5,11 @@ import { Observable, switchMap, of, tap, shareReplay, map, combineLatest, Behavi
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BasketStateService } from '../../services/BasketStateService';
+import { BasketItemComponent } from "./basket-item.component";
 
 @Component({
   selector: 'app-basket-page',
-  imports: [PageLayout, RouterModule, CommonModule],
+  imports: [PageLayout, RouterModule, CommonModule, BasketItemComponent],
   templateUrl: './basket-page.html',
 })
 export class BasketPage {
@@ -17,6 +18,10 @@ export class BasketPage {
   constructor(private apiClient: ApiClient) {}
 
   private refreshBasket$ = new BehaviorSubject<void>(undefined);
+
+  trackByBasketItem(index: number, item: BasketItem) {
+    return item.id;
+  }
   
   basketId$ = this.basketStateService.basketId$;
 
@@ -43,12 +48,13 @@ export class BasketPage {
     return items.reduce((sum, item) => sum + (item.product?.price || 0) * (item.quantity || 1), 0);
   }
 
-  removeItem(productId?: number) {
-    if (productId == null) return;
+  removeItem(basketItem?: BasketItem) {
+    console.log("remove item called");
+    if (!basketItem?.product?.id) return;
 
     this.basketId$
       .pipe(
-        switchMap(id => this.apiClient.basket_RemoveProductFromBasket(id, productId))
+        switchMap(id => this.apiClient.basket_RemoveProductFromBasket(id, basketItem.product!.id!))
       )
       .subscribe(() => {
         this.refreshBasket$.next();
@@ -87,4 +93,35 @@ export class BasketPage {
       )
       .subscribe(() => alert('Checkout successful!'));
   }
+
+  // removeItem() {
+  //   if (!this.basketItem.product?.id) return;
+
+  //   this.basketId$
+  //     .pipe(
+  //       switchMap(id =>
+  //         this.apiClient.basket_RemoveProductFromBasket(id, this.basketItem.product!.id!)
+  //       )
+  //     )
+  //     .subscribe(() => {
+  //       this.refreshBasket$.next();
+  //     });
+  // }
+
+  // updateQuantity(increment: number) {
+  //   if (!this.basketItem.product?.id) return;
+
+  //   const newQty = (this.basketItem.quantity || 1) + increment;
+  //   if (newQty < 1) return;
+
+  //   this.basketId$
+  //     .pipe(
+  //       switchMap(id =>
+  //         this.apiClient.basket_SetProductQuantity(id, this.basketItem.product!.id!, newQty)
+  //       )
+  //     )
+  //     .subscribe(() => {
+  //       this.refreshBasket$.next();
+  //     });
+  // }
 }

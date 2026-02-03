@@ -19,8 +19,11 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Utils\" />
+	</ItemGroup>
+
 	<Target Name="NSwag" AfterTargets="Build" Condition="Exists('nswag.json')">
 		<Exec Command="$(NSwagExe_Net100) run nswag.json" WorkingDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
-
 </Project>
