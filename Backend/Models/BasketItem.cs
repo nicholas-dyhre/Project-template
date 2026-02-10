@@ -6,21 +6,17 @@ namespace Backend.Models;
 public class BasketItem
 {
     [Required]
+    [Key]
     public int Id { get; set; }
 
     [Required]
-    public int BasketId { get; set; }
-
-    [JsonIgnore]
-    public Basket? Basket { get; set; }
-
+    public Guid BasketId { get; set; }
     [Required]
     public int ProductId { get; set; }
-
     [Required]
-    public required Product Product { get; set; }
-
-    [Required]
-    [Range(1, int.MaxValue)]
     public int Quantity { get; set; }
+    [Required]
+    public virtual Basket Basket { get; set; } = null!;
+    [Required]
+    public virtual Product Product { get; set; } = null!;
 }

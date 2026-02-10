@@ -4,7 +4,7 @@ import { ReplaySubject } from "rxjs";
 
 @Injectable({ providedIn: 'root' })
 export class BasketStateService {
-  private basketIdSubject = new ReplaySubject<number>(1);
+  private basketIdSubject = new ReplaySubject<string>(1);
   basketId$ = this.basketIdSubject.asObservable();
 
   constructor(private apiClient: ApiClient) {
@@ -15,7 +15,7 @@ export class BasketStateService {
     const storedId = localStorage.getItem('basketId');
 
     if (storedId) {
-      this.basketIdSubject.next(+storedId);
+      this.basketIdSubject.next(storedId);
     } else {
       this.apiClient.basket_CreateBasket().subscribe(id => {
         localStorage.setItem('basketId', id.toString());

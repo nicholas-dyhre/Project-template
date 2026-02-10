@@ -17,7 +17,7 @@ public class BasketController : ControllerBase
     }
 
     [HttpGet("{basketId}")]
-    public async Task<ActionResult<Basket>> GetBasket(int basketId)
+    public async Task<ActionResult<Basket>> GetBasket(Guid basketId)
     {
         var basket = await _basketService.GetBasketAsync(basketId);
         if (basket == null) return NotFound();
@@ -25,7 +25,7 @@ public class BasketController : ControllerBase
     }
 
     [HttpPut("add/{basketId}/{productId}")]
-    public async Task<IActionResult> AddProductToBasket(int basketId, int productId)
+    public async Task<IActionResult> AddProductToBasket(Guid basketId, int productId)
     {
         Console.WriteLine(@"Adding {productId} to {basketId} a new basket");
         await _basketService.AddProductToBasketAsync(basketId, productId);
@@ -33,28 +33,28 @@ public class BasketController : ControllerBase
     }
 
     [HttpPut("remove/{basketId}/{productId}")]
-    public async Task<IActionResult> RemoveProductFromBasket(int basketId, int productId)
+    public async Task<IActionResult> RemoveProductFromBasket(Guid basketId, int productId)
     {
         await _basketService.RemoveProductFromBasketAsync(basketId, productId);
         return NoContent();
     }
 
     [HttpPut("set-quantity/{basketId}/{productId}/{quantity}")]
-    public async Task<IActionResult> SetProductQuantity(int basketId, int productId, int quantity)
+    public async Task<IActionResult> SetProductQuantity(Guid basketId, int productId, int quantity)
     {
         await _basketService.SetProductQuantityAsync(basketId, productId, quantity);
         return NoContent();
     }
 
     [HttpDelete("{basketId}")]
-    public async Task<IActionResult> DeleteBasket(int basketId)
+    public async Task<IActionResult> DeleteBasket(Guid basketId)
     {
         await _basketService.DeleteBasketAsync(basketId);
         return NoContent();
     }
 
     [HttpPost("create")]
-    public async Task<ActionResult<int>> CreateBasket()
+    public async Task<ActionResult<Guid>> CreateBasket()
     {
         Console.WriteLine("Creating a new basket");
         var basketId = await _basketService.CreateBasket();
@@ -62,7 +62,7 @@ public class BasketController : ControllerBase
     }
 
     [HttpGet("total/{basketId}")]
-    public async Task<ActionResult<int>> GetBasketTotal(int basketId)
+    public async Task<ActionResult<int>> GetBasketTotal(Guid basketId)
     {
         var total = await _basketService.GetBasketTotal(basketId);
         return Ok(total);

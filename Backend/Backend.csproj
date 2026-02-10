@@ -4,9 +4,13 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-	</PropertyGroup>
+		<UserSecretsId>ff4c50f0-872a-4e45-a02e-5fae67823c7a</UserSecretsId>
+		<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.2" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.2">
@@ -23,7 +27,14 @@
 	  <Folder Include="Utils\" />
 	</ItemGroup>
 
-	<Target Name="NSwag" AfterTargets="Build" Condition="Exists('nswag.json')">
+	<Target Name="NSwag" AfterTargets="PostBuildEvent" Condition="Exists('nswag.json')">
 		<Exec Command="$(NSwagExe_Net100) run nswag.json" WorkingDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
+	
+	<!--
+	<Target Name="NSwag" AfterTargets="PostBuildEvent">
+		<Exec EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" Command="$(NSwagExe) aspnetcore2openapi /assembly:$(TargetDir)MyWebAssembly.dll /output:swagger.json" />
+		<Exec Command="$(NSwagExe_Net100) openapi2tsclient /input:swagger.json /output:Scripts/MyController.ts" />
+	</Target>
+	-->
 </Project>

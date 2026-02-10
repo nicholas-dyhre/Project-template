@@ -13,7 +13,7 @@ namespace Backend.Services
             _context = context;
         }
 
-        public async Task<Basket?> GetBasketAsync(int basketId)
+        public async Task<Basket?> GetBasketAsync(Guid basketId)
         {
             return await _context.Baskets
                 .Include(b => b.Items)
@@ -21,7 +21,7 @@ namespace Backend.Services
                 .FirstOrDefaultAsync(b => b.Id == basketId);
         }
 
-        public async Task AddProductToBasketAsync(int basketId, int productId)
+        public async Task AddProductToBasketAsync(Guid basketId, int productId)
         {
             Console.WriteLine("Product ID to add: " + productId);
             var basket = await GetBasketAsync(basketId)
@@ -49,7 +49,7 @@ namespace Backend.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task RemoveProductFromBasketAsync(int basketId, int productId)
+        public async Task RemoveProductFromBasketAsync(Guid basketId, int productId)
         {
             var basket = await GetBasketAsync(basketId)
                          ?? throw new KeyNotFoundException("Basket not found");
@@ -62,7 +62,7 @@ namespace Backend.Services
             }
         }
 
-        public async Task SetProductQuantityAsync(int basketId, int productId, int quantity)
+        public async Task SetProductQuantityAsync(Guid basketId, int productId, int quantity)
         {
             if (quantity < 1)
                 throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be at least 1");
@@ -79,7 +79,7 @@ namespace Backend.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteBasketAsync(int basketId)
+        public async Task DeleteBasketAsync(Guid basketId)
         {
             var basket = await _context.Baskets.FindAsync(basketId);
             if (basket == null) return;
@@ -88,11 +88,11 @@ namespace Backend.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<int?> CreateBasket()
+        public async Task<Guid?> CreateBasket()
         {
             var basket = new Basket()
             {
-                Id = new Random().Next(1, int.MaxValue),
+                Id = new Guid(),
                 Items = new List<BasketItem>()
             };
             _context.Baskets.Add(basket);
@@ -100,7 +100,7 @@ namespace Backend.Services
             return basket.Id;
         }
 
-        public async  Task<decimal> GetBasketTotal(int basketId)
+        public async  Task<decimal> GetBasketTotal(Guid basketId)
         {
             var basket = await _context.Baskets
                 .Include(b => b.Items)

@@ -1,9 +1,16 @@
+using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+
 namespace Backend.Models;
 
 public class Basket
 {
-    public int Id { get; set; }
-    public int? UserId { get; set; }
-    public User? User { get; set; }
-    public ICollection<BasketItem> Items { get; set; } = new List<BasketItem>();
+    [Key]
+    public Guid Id { get; set; } = Guid.NewGuid(); 
+    public string? IdentityUserId { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    public virtual IdentityUser? IdentityUser { get; set; }
+    public virtual ICollection<BasketItem> Items { get; set; } = new List<BasketItem>();
 }

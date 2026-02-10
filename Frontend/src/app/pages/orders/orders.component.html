@@ -1,0 +1,105 @@
+<section class="bg-gray-50 min-h-screen py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-gray-900">Order History</h2>
+      <p class="mt-2 text-gray-600">View and track your orders</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-12">
+      <p class="text-gray-600">Loading your orders...</p>
+    </div>
+
+    <!-- Not Authenticated -->
+    <div *ngIf="!isLoading && !isAuthenticated" class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="px-8 py-12 text-center">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h3>
+        <p class="text-gray-600 mb-6">Please sign in to view your order history</p>
+        <a 
+          routerLink="/login" 
+          [queryParams]="{ returnUrl: '/orders' }"
+          class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium"
+        >
+          Sign In
+        </a>
+      </div>
+    </div>
+
+    <!-- No Orders -->
+    <div *ngIf="!isLoading && isAuthenticated && orders.length === 0" class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="px-8 py-12 text-center">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">No Orders Yet</h3>
+        <p class="text-gray-600 mb-6">You haven't placed any orders yet. Start shopping to see your orders here!</p>
+        <a 
+          routerLink="/" 
+          class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium"
+        >
+          Start Shopping
+        </a>
+      </div>
+    </div>
+
+    <!-- Orders List -->
+    <div *ngIf="!isLoading && isAuthenticated && orders.length > 0" class="space-y-6">
+      <div *ngFor="let order of orders" class="bg-white rounded-lg shadow-md overflow-hidden">
+        <!-- Order Header -->
+        <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="mb-4 md:mb-0">
+              <h3 class="text-lg font-bold text-gray-900">Order {{ order.orderNumber }}</h3>
+              <p class="text-sm text-gray-600 mt-1">
+                Placed on {{ order.date | date:'MMMM d, yyyy' }}
+              </p>
+            </div>
+            <div class="flex items-center space-x-4">
+              <span [class]="'px-3 py-1 rounded-full text-sm font-medium ' + getStatusColor(order.status)">
+                {{ getStatusText(order.status) }}
+              </span>
+              <div class="text-right">
+                <p class="text-sm text-gray-600">Total</p>
+                <p class="text-xl font-bold text-gray-900">${{ order.total.toFixed(2) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="px-8 py-6">
+          <h4 class="text-sm font-medium text-gray-900 mb-4">Items</h4>
+          <div class="space-y-4">
+            <div *ngFor="let item of order.items" class="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
+              <div>
+                <p class="font-medium text-gray-900">{{ item.productName }}</p>
+                <p class="text-sm text-gray-600">Quantity: {{ item.quantity }}</p>
+              </div>
+              <p class="font-semibold text-gray-900">${{ (item.price * item.quantity).toFixed(2) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Actions -->
+        <div class="px-8 py-4 bg-gray-50 border-t border-gray-200">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium text-sm">
+              Track Order
+            </button>
+            <button class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors duration-200 font-medium text-sm">
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back to Account -->
+    <div *ngIf="!isLoading && isAuthenticated" class="mt-8 text-center">
+      <a 
+        routerLink="/account" 
+        class="text-blue-600 hover:text-blue-700 font-medium"
+      >
+        ← Back to Account
+      </a>
+    </div>
+  </div>
+</section>

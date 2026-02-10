@@ -19,7 +19,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{basketId}")]
-        public async Task<ActionResult<bool>> Checkout(int basketId)
+        public async Task<ActionResult<bool>> Checkout(Guid basketId)
         {
             await _basketService.DeleteBasketAsync(basketId);
             return Ok();

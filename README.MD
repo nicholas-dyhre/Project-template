@@ -1,3 +1,6 @@
+# Stack
+Angular + RxJS Frontend | C# .NET 10 Backend | PostgreSQL Database
+
 # E-Commerce Application
 
 This is a full-stack e-commerce application built with **ASP.NET Core** for the backend and **Angular** for the frontend. The backend provides REST APIs for products, baskets, and checkout functionality, while the frontend offers a responsive shopping experience. PostgreSQL is used as the database, and Entity Framework Core handles data access.
@@ -137,6 +140,12 @@ The frontend will be available at `http://localhost:4200` and will automatically
 * Ensure that localStorage does not contain a previous `basketId` to avoid conflicts with the seeded basket.
 * If you change seeded product data (like image URLs), remove the existing database and rerun migrations to apply the updates.
 
+### 6.1 Setup Authentication
+1. cd YourBackendProject
+2. dotnet user-secrets init
+3. dotnet user-secrets set "JwtSettings:SecretKey" "your-super-secret-key-from-last-step"
+4. dotnet user-secrets set "JwtSettings:Issuer" "Ecommerce"
+5. dotnet user-secrets set "JwtSettings:Audience" "EcommerceUsers"
 ---
 
 ## 7. Additional Notes
@@ -147,3 +156,5 @@ The frontend will be available at `http://localhost:4200` and will automatically
 * This setup assumes a single developer environment; adjust PostgreSQL credentials for production use.
 
 ---
+
+

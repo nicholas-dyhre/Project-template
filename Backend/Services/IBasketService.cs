@@ -5,12 +5,12 @@ namespace Backend.Services
 {
     public interface IBasketService
     {
-        Task<Basket?> GetBasketAsync(int basketId);
-        Task AddProductToBasketAsync(int basketId, int productId);
-        Task RemoveProductFromBasketAsync(int basketId, int productId);
-        Task SetProductQuantityAsync(int basketId, int productId, int quantity);
-        Task DeleteBasketAsync(int basketId);
-        Task<int?> CreateBasket();
-        Task<decimal> GetBasketTotal(int basketId);
+        Task<Basket?> GetBasketAsync(Guid basketId);
+        Task AddProductToBasketAsync(Guid basketId, int productId);
+        Task RemoveProductFromBasketAsync(Guid basketId, int productId);
+        Task SetProductQuantityAsync(Guid basketId, int productId, int quantity);
+        Task DeleteBasketAsync(Guid basketId);
+        Task<Guid?> CreateBasket();
+        Task<decimal> GetBasketTotal(Guid basketId);
     }
 }

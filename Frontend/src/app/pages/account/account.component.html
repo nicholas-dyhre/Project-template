@@ -1,0 +1,96 @@
+<section class="bg-gray-50 min-h-screen py-16">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-12">
+      <p class="text-gray-600">Loading account information...</p>
+    </div>
+
+    <!-- Account Content -->
+    <div *ngIf="!isLoading && currentUser" class="space-y-6">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="px-8 py-6 border-b border-gray-200">
+          <h2 class="text-3xl font-bold text-gray-900">My Account</h2>
+          <p class="mt-2 text-gray-600">Manage your account information</p>
+        </div>
+
+        <!-- Account Details -->
+        <div class="px-8 py-8">
+          <div class="space-y-6">
+            <!-- Email -->
+            <div>
+              <h3 class="text-sm font-medium text-gray-900 mb-2">Email Address</h3>
+              <p class="text-gray-600">{{ currentUser.email }}</p>
+            </div>
+
+            <!-- Full Name -->
+            <div *ngIf="currentUser.name">
+              <h3 class="text-sm font-medium text-gray-900 mb-2">Full Name</h3>
+              <p class="text-gray-600">{{ currentUser.name }}</p>
+            </div>
+
+            <!-- Account ID -->
+            <div>
+              <h3 class="text-sm font-medium text-gray-900 mb-2">Account ID</h3>
+              <p class="text-gray-600 text-sm font-mono">{{ currentUser.id }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="px-8 py-6 border-b border-gray-200">
+          <h3 class="text-xl font-bold text-gray-900">Quick Actions</h3>
+        </div>
+        <div class="px-8 py-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- View Orders -->
+            <a 
+              routerLink="/orders" 
+              class="block p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+            >
+              <h4 class="text-lg font-semibold text-gray-900 mb-2">Order History</h4>
+              <p class="text-sm text-gray-600">View your past orders and track shipments</p>
+            </a>
+
+            <!-- Continue Shopping -->
+            <a 
+              routerLink="/" 
+              class="block p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+            >
+              <h4 class="text-lg font-semibold text-gray-900 mb-2">Continue Shopping</h4>
+              <p class="text-sm text-gray-600">Browse our handcrafted products</p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="px-8 py-6">
+          <button
+            (click)="onLogout()"
+            class="w-full bg-red-600 text-white px-4 py-3 rounded-md hover:bg-red-700 transition-colors duration-200 font-medium"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Not Logged In State -->
+    <div *ngIf="!isLoading && !currentUser" class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="px-8 py-12 text-center">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Not Signed In</h2>
+        <p class="text-gray-600 mb-6">Please sign in to view your account details</p>
+        <a 
+          routerLink="/login" 
+          class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium"
+        >
+          Sign In
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
