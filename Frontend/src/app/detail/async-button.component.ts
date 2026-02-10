@@ -20,7 +20,6 @@ export class AsyncButtonComponent {
     this.state.set('loading');
 
     const runAnimation = new Promise<void>((resolve) => {
-      // Ensure animation lasts 600ms minimum
       setTimeout(resolve, 600);
     });
 
