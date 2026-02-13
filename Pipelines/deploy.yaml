@@ -15,7 +15,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: Ecommerce-Secrets  # Variable group from Azure DevOps Library (optional - for custom overrides)
   - name: buildConfiguration
     value: 'Release'
   - name: azureSubscription
