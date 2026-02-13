@@ -1,0 +1,245 @@
+# azure-pipelines.yml - Main CI/CD pipeline for E-commerce application
+# Triggers on commits to main branch
+# Builds frontend + backend, deploys infrastructure, and deploys application
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - README.md
+      - docs/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: Ecommerce-Secrets  # Variable group from Azure DevOps Library (optional - for custom overrides)
+  - name: buildConfiguration
+    value: 'Release'
+  - name: azureSubscription
+    value: 'EcommerceServiceConnection'  # Service connection name
+  - name: location
+    value: 'eastus'
+  - name: environment
+    value: 'dev'
+
+stages:
+  # ============================================================
+  # STAGE 1: BUILD
+  # ============================================================
+  - stage: Build
+    displayName: 'Build Frontend and Backend'
+    jobs:
+      - job: BuildFrontend
+        displayName: 'Build Angular Frontend'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Install Node.js'
+            inputs:
+              versionSpec: '24.x'
+          
+          - task: Cache@2
+            displayName: 'Cache npm packages'
+            inputs:
+              key: 'npm | "$(Agent.OS)" | Frontend/package-lock.json'
+              path: '$(Pipeline.Workspace)/.npm'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+          
+          - bash: |
+              chmod +x Pipelines/scripts/buildfrontend.sh
+              ./Pipelines/scripts/buildfrontend.sh
+            displayName: 'Build Frontend'
+          
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Frontend Artifact'
+            inputs:
+              targetPath: 'Frontend/dist'
+              artifact: 'frontend'
+              publishLocation: 'pipeline'
+
+      - job: BuildBackend
+        displayName: 'Build .NET Backend'
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Install .NET SDK'
+            inputs:
+              version: '10.x'
+          
+          - task: Cache@2
+            displayName: 'Cache NuGet packages'
+            inputs:
+              key: 'nuget | "$(Agent.OS)" | Backend/**/packages.lock.json'
+              path: '$(Pipeline.Workspace)/.nuget/packages'
+              restoreKeys: |
+                nuget | "$(Agent.OS)"
+          
+          - bash: |
+              chmod +x Pipelines/scripts/buildbackend.sh
+              ./Pipelines/scripts/buildbackend.sh
+            displayName: 'Build Backend'
+          
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Backend Artifact'
+            inputs:
+              targetPath: 'Backend/bin/Release/net10.0/publish'
+              artifact: 'backend'
+              publishLocation: 'pipeline'
+
+  # ============================================================
+  # STAGE 2: COMBINE ARTIFACTS
+  # ============================================================
+  - stage: CombineArtifacts
+    displayName: 'Combine Frontend and Backend'
+    dependsOn: Build
+    jobs:
+      - job: Combine
+        displayName: 'Merge Artifacts'
+        steps:
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Frontend Artifact'
+            inputs:
+              artifact: 'frontend'
+              path: '$(Pipeline.Workspace)/frontend'
+          
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Backend Artifact'
+            inputs:
+              artifact: 'backend'
+              path: '$(Pipeline.Workspace)/backend'
+          
+          - bash: |
+              chmod +x Pipelines/scripts/combine-artifacts.sh
+              ./Pipelines/scripts/combine-artifacts.sh
+            displayName: 'Combine Artifacts'
+            env:
+              FRONTEND_PATH: '$(Pipeline.Workspace)/frontend'
+              BACKEND_PATH: '$(Pipeline.Workspace)/backend'
+              OUTPUT_PATH: '$(Pipeline.Workspace)/combined'
+          
+          - task: ArchiveFiles@2
+            displayName: 'Create Deployment Package'
+            inputs:
+              rootFolderOrFile: '$(Pipeline.Workspace)/combined'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+              replaceExistingArchive: true
+          
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Combined Artifact'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/app.zip'
+              artifact: 'app-package'
+              publishLocation: 'pipeline'
+
+  # ============================================================
+  # STAGE 3: DEPLOY INFRASTRUCTURE
+  # ============================================================
+  - stage: DeployInfrastructure
+    displayName: 'Deploy Azure Infrastructure'
+    dependsOn: CombineArtifacts
+    jobs:
+      - job: DeployBicep
+        displayName: 'Deploy Bicep Templates'
+        steps:
+          - task: AzureCLI@2
+            displayName: 'Deploy Infrastructure'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Deploy infrastructure with auto-generated credentials
+                az deployment sub create \
+                  --location $(location) \
+                  --template-file IaC/main.bicep \
+                  --parameters \
+                    environment=$(environment) \
+                    location=$(location) \
+                  --name "deployment-$(Build.BuildId)"
+                
+                # Get outputs
+                APP_NAME=$(az deployment sub show \
+                  --name "deployment-$(Build.BuildId)" \
+                  --query 'properties.outputs.appServiceName.value' \
+                  --output tsv)
+                
+                KV_NAME=$(az deployment sub show \
+                  --name "deployment-$(Build.BuildId)" \
+                  --query 'properties.outputs.keyVaultName.value' \
+                  --output tsv)
+                
+                # Retrieve SQL admin login from Key Vault (not from outputs - security best practice)
+                SQL_LOGIN=$(az keyvault secret show \
+                  --vault-name $KV_NAME \
+                  --name sql-admin-login \
+                  --query value \
+                  --output tsv)
+                
+                echo "##vso[task.setvariable variable=appServiceName;isOutput=true]$APP_NAME"
+                echo "##vso[task.setvariable variable=keyVaultName;isOutput=true]$KV_NAME"
+                
+                echo "================================================"
+                echo "Deployment Complete!"
+                echo "================================================"
+                echo "App Service: $APP_NAME"
+                echo "Key Vault: $KV_NAME"
+                echo "SQL Admin Login: $SQL_LOGIN"
+                echo ""
+                echo "SQL Password stored securely in Key Vault secret: sql-admin-password"
+                echo ""
+                echo "To retrieve password:"
+                echo "  az keyvault secret show --vault-name $KV_NAME --name sql-admin-password --query value -o tsv"
+                echo ""
+                echo "App Service URL: https://$APP_NAME.azurewebsites.net"
+                echo "================================================"
+
+  # ============================================================
+  # STAGE 4: DEPLOY APPLICATION
+  # ============================================================
+  - stage: DeployApplication
+    displayName: 'Deploy Application to App Service'
+    dependsOn: DeployInfrastructure
+    jobs:
+      - deployment: DeployApp
+        displayName: 'Deploy to Azure App Service'
+        environment: '$(environment)'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@2
+                  displayName: 'Download App Package'
+                  inputs:
+                    artifact: 'app-package'
+                    path: '$(Pipeline.Workspace)'
+                
+                - task: AzureWebApp@1
+                  displayName: 'Deploy to App Service'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appType: 'webAppLinux'
+                    appName: 'app-ecommerce-$(environment)'
+                    package: '$(Pipeline.Workspace)/app.zip'
+                    runtimeStack: 'DOTNETCORE|10.0'
+                    startUpCommand: ''
+                
+                - task: AzureCLI@2
+                  displayName: 'Run EF Migrations'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      # Trigger EF migrations via Kudu API
+                      # This would require setting up a migration endpoint
+                      # For now, migrations will run on first app start
+                      echo "Migrations will run automatically on app startup"
+                
+                - bash: |
+                    echo "Deployment complete!"
+                    echo "Application URL: https://app-ecommerce-$(environment).azurewebsites.net"
+                  displayName: 'Deployment Summary'
