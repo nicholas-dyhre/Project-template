@@ -202,7 +202,6 @@ stages:
     jobs:
       - job: DeployApp
         displayName: 'Deploy to Azure App Service'
-        environment: '$(environment)'
         strategy:
           runOnce:
             deploy:
