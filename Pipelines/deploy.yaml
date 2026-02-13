@@ -202,39 +202,36 @@ stages:
     jobs:
       - job: DeployApp
         displayName: 'Deploy to Azure App Service'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: DownloadPipelineArtifact@2
-                  displayName: 'Download App Package'
-                  inputs:
-                    artifact: 'app-package'
-                    path: '$(Pipeline.Workspace)'
-                
-                - task: AzureWebApp@1
-                  displayName: 'Deploy to App Service'
-                  inputs:
-                    azureSubscription: '$(azureSubscription)'
-                    appType: 'webAppLinux'
-                    appName: 'app-ecommerce-$(environment)'
-                    package: '$(Pipeline.Workspace)/app.zip'
-                    runtimeStack: 'DOTNETCORE|10.0'
-                    startUpCommand: ''
-                
-                - task: AzureCLI@2
-                  displayName: 'Run EF Migrations'
-                  inputs:
-                    azureSubscription: '$(azureSubscription)'
-                    scriptType: 'bash'
-                    scriptLocation: 'inlineScript'
-                    inlineScript: |
-                      # Trigger EF migrations via Kudu API
-                      # This would require setting up a migration endpoint
-                      # For now, migrations will run on first app start
-                      echo "Migrations will run automatically on app startup"
-                
-                - bash: |
-                    echo "Deployment complete!"
-                    echo "Application URL: https://app-ecommerce-$(environment).azurewebsites.net"
-                  displayName: 'Deployment Summary'
+        steps:
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download App Package'
+            inputs:
+              artifact: 'app-package'
+              path: '$(Pipeline.Workspace)'
+          
+          - task: AzureWebApp@1
+            displayName: 'Deploy to App Service'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: 'webAppLinux'
+              appName: 'app-ecommerce-$(environment)'
+              package: '$(Pipeline.Workspace)/app.zip'
+              runtimeStack: 'DOTNETCORE|10.0'
+              startUpCommand: ''
+          
+          - task: AzureCLI@2
+            displayName: 'Run EF Migrations'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Trigger EF migrations via Kudu API
+                # This would require setting up a migration endpoint
+                # For now, migrations will run on first app start
+                echo "Migrations will run automatically on app startup"
+          
+          - bash: |
+              echo "Deployment complete!"
+              echo "Application URL: https://app-ecommerce-$(environment).azurewebsites.net"
+            displayName: 'Deployment Summary'
