@@ -31,7 +31,7 @@ stages:
   - stage: Build
     displayName: 'Build Frontend and Backend'
     jobs:
-      - job: BuildFrontend
+      - job: BuildAll
         displayName: 'Build Angular Frontend'
         steps:
           - task: NodeTool@0
@@ -58,10 +58,7 @@ stages:
               targetPath: 'Frontend/dist'
               artifact: 'frontend'
               publishLocation: 'pipeline'
-
-      - job: BuildBackend
-        displayName: 'Build .NET Backend'
-        steps:
+              
           - task: UseDotNet@2
             displayName: 'Install .NET SDK'
             inputs:
