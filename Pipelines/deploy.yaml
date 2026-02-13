@@ -200,7 +200,7 @@ stages:
     displayName: 'Deploy Application to App Service'
     dependsOn: DeployInfrastructure
     jobs:
-      - deployment: DeployApp
+      - job: DeployApp
         displayName: 'Deploy to Azure App Service'
         environment: '$(environment)'
         strategy:
