@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
@@ -15,53 +15,45 @@ export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
   private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
 
-  constructor(private authService: AuthService) {}
+  constructor(private injector: Injector) {} // use Injector instead of AuthService directly
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    const authService = this.injector.get(AuthService); // lazy resolve
+
     // Add access token to request if available
-    const token = this.authService.getAccessToken();
-    
+    const token = authService.getAccessToken();
     if (token) {
       request = this.addToken(request, token);
     }
 
-    // Ensure credentials (cookies) are sent with requests
     request = request.clone({
       withCredentials: true
     });
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        // If 401 Unauthorized, try to refresh the token
-        if (error.status === 401 && !request.url.includes('/auth/login') && !request.url.includes('/auth/refresh-token')) {
-          return this.handle401Error(request, next);
+        if (error.status === 401 &&
+            !request.url.includes('/auth/login') &&
+            !request.url.includes('/auth/refresh-token')) {
+          return this.handle401Error(request, next, authService);
         }
-        
         return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Add JWT token to request headers
-   */
   private addToken(request: HttpRequest<any>, token: string): HttpRequest<any> {
     return request.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
+      setHeaders: { Authorization: `Bearer ${token}` }
     });
   }
 
-  /**
-   * Handle 401 error by refreshing token
-   */
-  private handle401Error(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  private handle401Error(request: HttpRequest<any>, next: HttpHandler, authService: AuthService): Observable<HttpEvent<any>> {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
       this.refreshTokenSubject.next(null);
 
-      return this.authService.refreshToken().pipe(
+      return authService.refreshToken().pipe(
         switchMap((response: any) => {
           this.isRefreshing = false;
           this.refreshTokenSubject.next(response.accessToken);
@@ -69,19 +61,15 @@ export class AuthInterceptor implements HttpInterceptor {
         }),
         catchError((error) => {
           this.isRefreshing = false;
-          // Refresh failed, user needs to log in again
-          this.authService.logout().subscribe();
+          authService.logout().subscribe();
           return throwError(() => error);
         })
       );
     } else {
-      // Wait for token refresh to complete
       return this.refreshTokenSubject.pipe(
         filter(token => token != null),
         take(1),
-        switchMap(token => {
-          return next.handle(this.addToken(request, token));
-        })
+        switchMap(token => next.handle(this.addToken(request, token)))
       );
     }
   }

@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { BasketStateService } from '../services/BasketStateService';
+import { AuthService } from '../services/auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -8,6 +9,11 @@ import { BasketStateService } from '../services/BasketStateService';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('Frontend');
+  private authService = inject(AuthService);
+
+  ngOnInit(): void {
+    this.authService.checkAuthStatus();
+  }
 }

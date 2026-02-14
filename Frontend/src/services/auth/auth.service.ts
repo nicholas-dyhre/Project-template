@@ -12,17 +12,12 @@ export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  constructor(
-    private apiClient: ApiClient
-  ) {
-    // Check if user is already logged in on app initialization
-    this.checkAuthStatus();
-  }
+  constructor(private apiClient: ApiClient) {}
 
   /**
    * Check if user is authenticated by checking for access token
    */
-  private checkAuthStatus(): void {
+  public checkAuthStatus(): void {
     const token = this.getAccessToken();
     if (token) {
       // Verify token is still valid by calling /me endpoint
@@ -60,6 +55,7 @@ export class AuthService {
         this.isAuthenticatedSubject.next(true);
       }),
       catchError(err => {
+        console.log("clear 2")
         this.clearTokens();
         this.currentUserSubject.next(null);
         this.isAuthenticatedSubject.next(false);
@@ -88,6 +84,7 @@ export class AuthService {
         });
       }),
       catchError(error => {
+        console.log("err", error)
         this.clearTokens();
         this.currentUserSubject.next(null);
         this.isAuthenticatedSubject.next(false);
@@ -121,6 +118,7 @@ export class AuthService {
    * Clear all tokens
    */
   private clearTokens(): void {
+    console.log("clear");
     localStorage.removeItem('accessToken');
     // Refresh token is in HttpOnly cookie, can't access from JS (good for security)
   }
