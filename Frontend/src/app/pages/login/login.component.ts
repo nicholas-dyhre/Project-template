@@ -1,8 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
+import { finalize } from 'rxjs';
+import { AuthResult, LoginRequest } from '../../api/generated-api-client';
 
 @Component({
   selector: 'app-login',
@@ -12,6 +14,7 @@ import { AuthService } from '../../../services/auth/auth.service';
 })
 export class LoginComponent {
   private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
   loginForm: FormGroup;
   isLoading = false;
   errorMessage = '';
@@ -43,20 +46,26 @@ export class LoginComponent {
       this.isLoading = true;
       this.errorMessage = '';
 
-      this.authService.login(this.loginForm.value).subscribe({
-        next: (response) => {
-          console.log('Login successful', response);
-          this.router.navigate([this.returnUrl]);
-        },
-        error: (error) => {
+      const { email, password } = this.loginForm.value;
+      const loginRequest = new LoginRequest({ email, password });
+      this.authService.login(loginRequest).pipe(
+        finalize(() => {
           this.isLoading = false;
-          this.errorMessage = error.error?.message || 'Login failed. Please try again.';
-          console.error('Login error', error);
+          this.cdr.markForCheck();
+        })
+      ).subscribe({
+        next: res => {
+          if (res.success) {
+            this.router.navigate([this.returnUrl]);
+          } else {
+            this.errorMessage = res.message || 'Login failed';
+          }
         },
-        complete: () => {
-          this.isLoading = false;
+        error: err => {
+          const authResult = err?.result as AuthResult;
+          this.errorMessage = authResult?.message || 'Invalid credentials';
         }
-      });
+      }); 
     }
   }
 }

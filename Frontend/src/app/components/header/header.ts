@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconBasket } from '../Icons/icon-basket';
 import { AuthService } from '../../../services/auth/auth.service';
-import { User } from '../../api/generated-api-client';
+import { UserDto } from '../../api/generated-api-client';
 
 @Component({
   selector: 'app-header',
@@ -11,7 +11,7 @@ import { User } from '../../api/generated-api-client';
 })
 export class Header {
   isAuthenticated = false;
-  currentUser: User | null = null;
+  currentUser: UserDto | null = null;
   showUserMenu = false;
 
   constructor(private authService: AuthService) {}

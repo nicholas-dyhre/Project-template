@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap, catchError, of } from 'rxjs';
-import { ApiClient, AuthResult, LoginRequest, RegisterRequest, User } from '../../app/api/generated-api-client';
+import { BehaviorSubject, Observable, tap, catchError, of, throwError } from 'rxjs';
+import { ApiClient, AuthResult, LoginRequest, RegisterRequest, UserDto } from '../../app/api/generated-api-client';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private currentUserSubject = new BehaviorSubject<UserDto | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
   
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
@@ -47,7 +47,25 @@ export class AuthService {
    * Login with email and password
    */
   login(request: LoginRequest): Observable<AuthResult> {
-    return this.apiClient.auth_Login(request);
+    return this.apiClient.auth_Login(request).pipe(
+      tap(response => {
+
+        // Store access token
+        this.setAccessToken(response.accessToken);
+
+        // Update user state
+        this.currentUserSubject.next(response.user);
+
+        // Mark authenticated
+        this.isAuthenticatedSubject.next(true);
+      }),
+      catchError(err => {
+        this.clearTokens();
+        this.currentUserSubject.next(null);
+        this.isAuthenticatedSubject.next(false);
+        return throwError(() => err);
+      })
+    );
   }
 
   /**
@@ -81,7 +99,7 @@ export class AuthService {
   /**
    * Get current user details
    */
-  getCurrentUser(): Observable<User> {
+  getCurrentUser(): Observable<UserDto> {
     return this.apiClient.auth_GetCurrentUser();
   }
 
@@ -117,7 +135,7 @@ export class AuthService {
   /**
    * Get current user value (synchronous)
    */
-  getCurrentUserValue(): User | null {
+  getCurrentUserValue(): UserDto | null {
     return this.currentUserSubject.value;
   }
 }

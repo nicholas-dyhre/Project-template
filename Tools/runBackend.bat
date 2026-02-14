@@ -1,0 +1,3 @@
+echo Running the backend...
+cd backend
+dotnet run

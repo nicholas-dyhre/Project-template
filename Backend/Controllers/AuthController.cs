@@ -1,6 +1,7 @@
 using Backend.Dto;
 using Backend.Models;
 using Backend.Services.Auth;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,53 +21,70 @@ namespace Backend.Controllers
         }
 
         [HttpPost("register")]
+        [ProducesResponseType(typeof(AuthResult), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(AuthResult), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(AuthResult), StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<AuthResult>> Register([FromBody] RegisterRequest request)
         {
-            try
-            {
-                var result = await _authService.RegisterAsync(request.Email, request.Password, request.FullName);
-                
-                if (!result.Success)
-                {
-                    return Ok(new { message = result.Message, errors = result.Errors });
-                }
+            var result = await _authService.RegisterAsync(request.Email, request.Password, request.FullName);
 
-                return Ok(new { message = "Registration successful", user = result.User });
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                _logger.LogError(ex, "Error during registration");
-                return StatusCode(500, new { message = "An error occurred during registration" });
+                var response = new AuthResult
+                {
+                    Success = false,
+                    Message = result.Message,
+                    Errors = result.Errors
+                };
+
+                if (result.Message.Contains("exists"))
+                    return Conflict(response); // 409
+
+                return UnprocessableEntity(response); // 422
             }
+
+            SetRefreshTokenCookie(result.RefreshToken);
+
+            return Created("", new AuthResult
+            {
+                Success = true,
+                Message = "Registration successful",
+                User = result.User
+            });
         }
 
         [HttpPost("login")]
+        [ProducesResponseType(typeof(AuthResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AuthResult), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AuthResult>> Login([FromBody] LoginRequest request)
         {
-            try
+            var result = await _authService.LoginAsync(request.Email, request.Password);
+
+            if (!result.Success)
             {
-                var result = await _authService.LoginAsync(request.Email, request.Password);
-                
-                if (!result.Success)
+                var response = new AuthResult
                 {
-                    return Unauthorized(new { message = result.Message });
-                }
+                    Success = false,
+                    Message = result.Message,
+                    Errors = result.Errors,
+                    AccessToken = "",
+                    RefreshToken = "",
+                    User = null
+                };
 
-                // Set refresh token in HttpOnly cookie
-                SetRefreshTokenCookie(result.RefreshToken);
-
-                return Ok(new 
-                { 
-                    accessToken = result.AccessToken,
-                    user = result.User,
-                    message = "Login successful"
-                });
+                return BadRequest(response);
             }
-            catch (Exception ex)
+
+            SetRefreshTokenCookie(result.RefreshToken);
+
+            return Ok(new AuthResult
             {
-                _logger.LogError(ex, "Error during login");
-                return StatusCode(500, new { message = "An error occurred during login" });
-            }
+                Success = true,
+                Message = "Login successful",
+                AccessToken = result.AccessToken,
+                RefreshToken = result.RefreshToken,
+                User = result.User
+            });
         }
 
         [HttpPost("refresh-token")]
@@ -131,7 +149,7 @@ namespace Backend.Controllers
 
         [Authorize]
         [HttpGet("me")]
-        public async Task<ActionResult<User>> GetCurrentUser()
+        public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
             try
             {

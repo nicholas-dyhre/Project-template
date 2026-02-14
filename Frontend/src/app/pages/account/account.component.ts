@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
-import { User } from '../../api/generated-api-client';
+import { UserDto } from '../../api/generated-api-client';
 
 @Component({
   selector: 'app-account',
@@ -11,7 +11,7 @@ import { User } from '../../api/generated-api-client';
   templateUrl: './account.component.html'
 })
 export class AccountComponent implements OnInit {
-  currentUser: User | null = null;
+  currentUser: UserDto | null = null;
   isLoading = true;
 
   constructor(private authService: AuthService) {}

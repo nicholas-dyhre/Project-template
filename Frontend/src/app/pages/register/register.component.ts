@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -10,7 +10,8 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
-import { AuthError, RegisterRequest } from '../../api/generated-api-client';
+import { AuthError, AuthResult, RegisterRequest } from '../../api/generated-api-client';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -20,6 +21,7 @@ import { AuthError, RegisterRequest } from '../../api/generated-api-client';
 })
 export class RegisterComponent implements OnInit {
   private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
   registerForm: FormGroup;
   isLoading = false;
@@ -80,24 +82,22 @@ export class RegisterComponent implements OnInit {
     const { fullName, email, password } = this.registerForm.value;
     const request = new RegisterRequest({ fullName, email, password });
 
-    this.authService.register(request).subscribe({
-      next: (res) => {
+    this.authService.register(request).pipe(
+      finalize(() => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (res: AuthResult) => {
         if (res.success === true) {
           this.successMessage = 'Registration successful! Redirecting...';
           this.router.navigate(['/login']);
-        } else {
-          if (res?.errors?.length) {
-            this.applyServerErrors(res.errors);
-          } else {
-            this.errorMessage = res?.message || 'Registration failed';
-          }
-        }        
+        }
+        else {
+          this.errorMessage = res?.message || 'Registration failed';
+        }
       },
-      error: (apiError) => {
-        console.log('Registration error', apiError); // <-- now this should show { message, errors }
-
-        this.isLoading = false;
-
+      error: (apiError: AuthResult) => {
         if (apiError?.errors?.length) {
           this.applyServerErrors(apiError.errors);
         } else {
