@@ -384,6 +384,38 @@
         }
       }
     },
+    "/api/Basket/create/{userId}": {
+      "post": {
+        "tags": [
+          "Basket"
+        ],
+        "operationId": "Basket_CreateBasket2",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "guid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Basket/total/{basketId}": {
       "get": {
         "tags": [
@@ -823,7 +855,6 @@
           "basketId",
           "productId",
           "quantity",
-          "basket",
           "product"
         ],
         "properties": {
@@ -843,9 +874,6 @@
           "quantity": {
             "type": "integer",
             "format": "int32"
-          },
-          "basket": {
-            "$ref": "#/components/schemas/Basket"
           },
           "product": {
             "$ref": "#/components/schemas/Product"

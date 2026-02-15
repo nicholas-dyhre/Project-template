@@ -61,6 +61,14 @@ public class BasketController : ControllerBase
         return Ok(basketId);
     }
 
+    [HttpPost("create/{userId}")]
+    public async Task<ActionResult<Guid>> CreateBasket(string userId)
+    {
+        Console.WriteLine("Creating a new basket");
+        var basketId = await _basketService.CreateBasket();
+        return Ok(basketId);
+    }
+
     [HttpGet("total/{basketId}")]
     public async Task<ActionResult<int>> GetBasketTotal(Guid basketId)
     {

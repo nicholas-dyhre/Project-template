@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@angular/core';
+import { inject, Injectable, Injector } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
@@ -9,9 +9,11 @@ import {
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, filter, take, switchMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { LocalStorageService } from '../localStorage.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
+  private localStorageService = inject(LocalStorageService);
   private isRefreshing = false;
   private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
 
@@ -21,7 +23,7 @@ export class AuthInterceptor implements HttpInterceptor {
     const authService = this.injector.get(AuthService); // lazy resolve
 
     // Add access token to request if available
-    const token = authService.getAccessToken();
+    const token = this.localStorageService.getAccessToken();
     if (token) {
       request = this.addToken(request, token);
     }

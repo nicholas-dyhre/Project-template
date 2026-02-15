@@ -1,5 +1,6 @@
 ﻿using Backend.Data;
 using Backend.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services
@@ -93,7 +94,10 @@ namespace Backend.Services
             var basket = new Basket()
             {
                 Id = new Guid(),
-                Items = new List<BasketItem>()
+                Items = new List<BasketItem>(),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                //IdentityUserId = IdentityUserId
             };
             _context.Baskets.Add(basket);
             await _context.SaveChangesAsync();

@@ -1,9 +1,9 @@
 import { Component, inject, input } from '@angular/core';
 import { BasketItem } from '../../api/generated-api-client';
 import { BehaviorSubject } from 'rxjs';
-import { BasketStateService } from '../../../services/BasketStateService';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { BasketStateService } from '../../../services/BasketStateService';
 
 @Component({
   selector: 'app-basket-item',

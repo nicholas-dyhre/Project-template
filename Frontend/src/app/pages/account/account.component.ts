@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -11,6 +11,7 @@ import { UserDto } from '../../api/generated-api-client';
   templateUrl: './account.component.html'
 })
 export class AccountComponent implements OnInit {
+  private cdr = inject(ChangeDetectorRef);
   currentUser: UserDto | null = null;
   isLoading = true;
 
@@ -30,7 +31,10 @@ export class AccountComponent implements OnInit {
 
   onLogout(): void {
     if (confirm('Are you sure you want to log out?')) {
-      this.authService.logout().subscribe();
+      this.authService.logout().subscribe(() => {
+      this.currentUser = null;
+      this.cdr.markForCheck();
+    });
     }
   }
 }

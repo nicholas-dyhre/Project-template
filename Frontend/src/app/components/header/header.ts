@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconBasket } from '../Icons/icon-basket';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -10,6 +10,7 @@ import { UserDto } from '../../api/generated-api-client';
   templateUrl: './header.html',
 })
 export class Header {
+  private cdr = inject(ChangeDetectorRef);
   isAuthenticated = false;
   currentUser: UserDto | null = null;
   showUserMenu = false;
@@ -35,7 +36,12 @@ export class Header {
   }
 
   onLogout(): void {
-    this.authService.logout().subscribe();
-    this.showUserMenu = false;
+    this.authService.logout().subscribe(() => {
+      this.currentUser = null;
+      this.isAuthenticated = false;
+      this.closeUserMenu();
+      this.showUserMenu = false;
+      this.cdr.markForCheck();
+    });
   }
 }

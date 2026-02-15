@@ -1,31 +1,76 @@
-import { Injectable } from "@angular/core";
+import { BehaviorSubject, firstValueFrom, Observable, of, shareReplay, switchMap, take, tap } from "rxjs";
 import { ApiClient } from "../app/api/generated-api-client";
-import { ReplaySubject } from "rxjs";
+import { LocalStorageService } from "./localStorage.service";
+import { Injectable } from "@angular/core";
 
 @Injectable({ providedIn: 'root' })
 export class BasketStateService {
-  private basketIdSubject = new ReplaySubject<string>(1);
-  basketId$ = this.basketIdSubject.asObservable();
 
-  constructor(private apiClient: ApiClient) {
-    this.initBasket();
+  private basketIdSubject = new BehaviorSubject<string | null>(null);
+
+  basketId$ = this.basketIdSubject.pipe(
+    switchMap(id => {
+      if (id) {
+        return of(id);
+      }
+
+      const storedId = this.localStorageService.getBasketId();
+
+      if (storedId) {
+        this.basketIdSubject.next(storedId);
+        return of(storedId);
+      }
+
+      return this.apiClient.basket_CreateBasket().pipe(
+        tap(newId => {
+          this.localStorageService.setBasketId(newId);
+          this.basketIdSubject.next(newId);
+        })
+      );
+    }),
+    shareReplay(1)
+  );
+
+  constructor(
+    private apiClient: ApiClient,
+    private localStorageService: LocalStorageService
+  ) {
+    this.getOrCreateBasketId();
   }
 
-  private initBasket() {
-    const storedId = localStorage.getItem('basketId');
+  async getOrCreateBasketId(): Promise<string> {
+    const current = this.basketIdSubject.value;
+    if (current) return current;
 
-    if (storedId) {
-      this.basketIdSubject.next(storedId);
-    } else {
-      this.apiClient.basket_CreateBasket().subscribe(id => {
-        localStorage.setItem('basketId', id.toString());
-        this.basketIdSubject.next(id);
-      });
+    const stored = this.localStorageService.getBasketId();
+    if (stored) {
+      this.basketIdSubject.next(stored);
+      return stored;
     }
+
+    const newId = await firstValueFrom(
+      this.apiClient.basket_CreateBasket()
+    );
+
+    this.localStorageService.setBasketId(newId);
+    this.basketIdSubject.next(newId);
+
+    return newId;
   }
 
-  clearBasket() {
-    localStorage.removeItem('basketId');
-    this.initBasket();
+  checkoutBasket(): Observable<boolean> {
+    return this.basketId$.pipe(
+      take(1),
+      switchMap(basketId =>
+        this.apiClient.checkout_Checkout(basketId)
+      ),
+      tap(() => this.clearBasket())
+    );
+  }
+
+  async clearBasket() {
+    this.localStorageService.RemoveBasketId();
+    this.basketIdSubject.next(null);
+    await this.getOrCreateBasketId();
   }
 }

@@ -34,7 +34,7 @@
         <div class="flex space-x-4 relative">
           <app-async-button
             label="Add to cart"
-            [action]="addToCartAction(product)"
+            (click)="addToBasket()!(product.id)"
           />
 
             <button routerLink="/" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors duration-200 font-medium">

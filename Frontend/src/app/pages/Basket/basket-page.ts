@@ -1,11 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { PageLayout } from '../../components/page-layout/page-layout';
-import { ApiClient, Basket, BasketItem, Product } from '../../api/generated-api-client';
-import { Observable, switchMap, of, tap, shareReplay, map, combineLatest, BehaviorSubject } from 'rxjs';
+import { ApiClient, BasketItem, Product } from '../../api/generated-api-client';
+import { Observable, switchMap, of, shareReplay, map, combineLatest, BehaviorSubject } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { BasketStateService } from '../../../services/BasketStateService';
 import { BasketItemComponent } from "./basket-item.component";
+import { BasketStateService } from '../../../services/BasketStateService';
 
 @Component({
   selector: 'app-basket-page',
@@ -13,7 +13,7 @@ import { BasketItemComponent } from "./basket-item.component";
   templateUrl: './basket-page.html',
 })
 export class BasketPage {
-
+  private cdr = inject(ChangeDetectorRef);
   private basketStateService = inject(BasketStateService);
   constructor(private apiClient: ApiClient) {}
 
@@ -85,43 +85,10 @@ export class BasketPage {
       });
   }
 
-  checkout() {
-    this.basketId$
-      .pipe(
-        switchMap(id => this.apiClient.checkout_Checkout(id)),
-        tap(() => localStorage.removeItem('basketId'))
-      )
-      .subscribe(() => alert('Checkout successful!'));
+  async checkout() {
+    this.basketStateService.checkoutBasket().subscribe({
+      next: () => alert('Checkout successful!'),
+      error: err => alert('Checkout failed: ' + err)
+    });
   }
-
-  // removeItem() {
-  //   if (!this.basketItem.product?.id) return;
-
-  //   this.basketId$
-  //     .pipe(
-  //       switchMap(id =>
-  //         this.apiClient.basket_RemoveProductFromBasket(id, this.basketItem.product!.id!)
-  //       )
-  //     )
-  //     .subscribe(() => {
-  //       this.refreshBasket$.next();
-  //     });
-  // }
-
-  // updateQuantity(increment: number) {
-  //   if (!this.basketItem.product?.id) return;
-
-  //   const newQty = (this.basketItem.quantity || 1) + increment;
-  //   if (newQty < 1) return;
-
-  //   this.basketId$
-  //     .pipe(
-  //       switchMap(id =>
-  //         this.apiClient.basket_SetProductQuantity(id, this.basketItem.product!.id!, newQty)
-  //       )
-  //     )
-  //     .subscribe(() => {
-  //       this.refreshBasket$.next();
-  //     });
-  // }
 }

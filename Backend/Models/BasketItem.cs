@@ -16,6 +16,7 @@ public class BasketItem
     [Required]
     public int Quantity { get; set; }
     [Required]
+    [JsonIgnore]
     public virtual Basket Basket { get; set; } = null!;
     [Required]
     public virtual Product Product { get; set; } = null!;

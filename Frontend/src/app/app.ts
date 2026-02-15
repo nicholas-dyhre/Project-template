@@ -1,6 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { BasketStateService } from '../services/BasketStateService';
 import { AuthService } from '../services/auth/auth.service';
 
 @Component({
