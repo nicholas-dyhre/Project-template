@@ -8,9 +8,8 @@ describe('BusinessHours', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BusinessHours]
-    })
-    .compileComponents();
+      imports: [BusinessHours],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(BusinessHours);
     component = fixture.componentInstance;

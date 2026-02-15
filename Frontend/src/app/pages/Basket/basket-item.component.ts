@@ -3,7 +3,7 @@ import { BasketItem } from '../../api/generated-api-client';
 import { BehaviorSubject } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { BasketStateService } from '../../../services/BasketStateService';
+import { BasketStateService } from '../../../services/basketStateService';
 
 @Component({
   selector: 'app-basket-item',

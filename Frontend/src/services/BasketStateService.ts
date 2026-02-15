@@ -1,15 +1,25 @@
-import { BehaviorSubject, firstValueFrom, Observable, of, shareReplay, switchMap, take, tap } from "rxjs";
-import { ApiClient } from "../app/api/generated-api-client";
-import { LocalStorageService } from "./localStorage.service";
-import { Injectable } from "@angular/core";
+import {
+  BehaviorSubject,
+  firstValueFrom,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import { ApiClient } from '../app/api/generated-api-client';
+import { LocalStorageService } from './localStorage.service';
+import { inject, Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class BasketStateService {
-
+  private apiClient = inject(ApiClient);
+  private localStorageService = inject(LocalStorageService);
   private basketIdSubject = new BehaviorSubject<string | null>(null);
 
   basketId$ = this.basketIdSubject.pipe(
-    switchMap(id => {
+    switchMap((id) => {
       if (id) {
         return of(id);
       }
@@ -22,19 +32,16 @@ export class BasketStateService {
       }
 
       return this.apiClient.basket_CreateBasket().pipe(
-        tap(newId => {
+        tap((newId) => {
           this.localStorageService.setBasketId(newId);
           this.basketIdSubject.next(newId);
-        })
+        }),
       );
     }),
-    shareReplay(1)
+    shareReplay(1),
   );
 
-  constructor(
-    private apiClient: ApiClient,
-    private localStorageService: LocalStorageService
-  ) {
+  constructor() {
     this.getOrCreateBasketId();
   }
 
@@ -48,9 +55,7 @@ export class BasketStateService {
       return stored;
     }
 
-    const newId = await firstValueFrom(
-      this.apiClient.basket_CreateBasket()
-    );
+    const newId = await firstValueFrom(this.apiClient.basket_CreateBasket());
 
     this.localStorageService.setBasketId(newId);
     this.basketIdSubject.next(newId);
@@ -61,10 +66,8 @@ export class BasketStateService {
   checkoutBasket(): Observable<boolean> {
     return this.basketId$.pipe(
       take(1),
-      switchMap(basketId =>
-        this.apiClient.checkout_Checkout(basketId)
-      ),
-      tap(() => this.clearBasket())
+      switchMap((basketId) => this.apiClient.checkout_Checkout(basketId)),
+      tap(() => this.clearBasket()),
     );
   }
 

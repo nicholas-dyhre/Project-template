@@ -1,20 +1,26 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap, catchError, of, throwError } from 'rxjs';
-import { ApiClient, AuthResult, LoginRequest, RegisterRequest, UserDto } from '../../app/api/generated-api-client';
+import {
+  ApiClient,
+  AuthResult,
+  FileResponse,
+  LoginRequest,
+  RegisterRequest,
+  UserDto,
+} from '../../app/api/generated-api-client';
 import { LocalStorageService } from '../localStorage.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  private localStorageService = inject(LocalStorageService)
+  private localStorageService = inject(LocalStorageService);
+  private apiClient = inject(ApiClient);
   private currentUserSubject = new BehaviorSubject<UserDto | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-  
+
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-
-  constructor(private apiClient: ApiClient) {}
 
   /**
    * Check if user is authenticated by checking for access token
@@ -31,7 +37,7 @@ export class AuthService {
         error: () => {
           // Token invalid, try to refresh
           this.refreshToken().subscribe();
-        }
+        },
       });
     }
   }
@@ -45,8 +51,7 @@ export class AuthService {
    */
   login(request: LoginRequest): Observable<AuthResult> {
     return this.apiClient.auth_Login(request).pipe(
-      tap(response => {
-
+      tap((response) => {
         // Store access token
         this.localStorageService.setAccessToken(response.accessToken);
 
@@ -56,27 +61,26 @@ export class AuthService {
         // Mark authenticated
         this.isAuthenticatedSubject.next(true);
       }),
-      catchError(err => {
-        console.log("clear 2")
+      catchError((err) => {
+        console.log('clear 2');
         this.localStorageService.clearTokens();
         this.currentUserSubject.next(null);
         this.isAuthenticatedSubject.next(false);
         return throwError(() => err);
-      })
+      }),
     );
   }
 
   /**
    * Logout the current user
    */
-  logout(): Observable<any> {
-    
+  logout(): Observable<FileResponse> {
     return this.apiClient.auth_Logout().pipe(
       tap(() => {
         this.localStorageService.clearTokens();
         this.currentUserSubject.next(null);
         this.isAuthenticatedSubject.next(false);
-      })
+      }),
     );
   }
 
@@ -85,20 +89,20 @@ export class AuthService {
    */
   refreshToken(): Observable<AuthResult> {
     return this.apiClient.auth_RefreshToken().pipe(
-      tap(response => {
+      tap((response) => {
         this.localStorageService.setAccessToken(response.accessToken);
-        this.getCurrentUser().subscribe(user => {
+        this.getCurrentUser().subscribe((user) => {
           this.currentUserSubject.next(user);
           this.isAuthenticatedSubject.next(true);
         });
       }),
-      catchError(error => {
-        console.log("err", error)
+      catchError((error) => {
+        console.log('err', error);
         this.localStorageService.clearTokens();
         this.currentUserSubject.next(null);
         this.isAuthenticatedSubject.next(false);
         return of(error);
-      })
+      }),
     );
   }
 
@@ -112,7 +116,6 @@ export class AuthService {
   /**
    * Get access token from localStorage
    */
-  
 
   /**
    * Check if user is currently authenticated

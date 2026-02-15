@@ -6,7 +6,7 @@ import {
   FormGroup,
   Validators,
   ReactiveFormsModule,
-  ValidationErrors
+  ValidationErrors,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -17,29 +17,28 @@ import { finalize } from 'rxjs';
   selector: 'app-register',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './register.component.html'
+  templateUrl: './register.component.html',
 })
 export class RegisterComponent implements OnInit {
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   registerForm: FormGroup;
   isLoading = false;
   errorMessage = '';
   successMessage = '';
 
-  constructor(
-    private fb: FormBuilder,
-    private router: Router
-  ) {
+  constructor() {
     this.registerForm = this.fb.group(
       {
         fullName: [''],
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(8)]],
-        confirmPassword: ['', Validators.required]
+        confirmPassword: ['', Validators.required],
       },
-      { validators: this.passwordMatchValidator }
+      { validators: this.passwordMatchValidator },
     );
   }
 
@@ -64,9 +63,7 @@ export class RegisterComponent implements OnInit {
     const password = control.get('password')?.value;
     const confirm = control.get('confirmPassword')?.value;
 
-    return password && confirm && password !== confirm
-      ? { passwordMismatch: true }
-      : null;
+    return password && confirm && password !== confirm ? { passwordMismatch: true } : null;
   }
 
   onSubmit(): void {
@@ -82,29 +79,31 @@ export class RegisterComponent implements OnInit {
     const { fullName, email, password } = this.registerForm.value;
     const request = new RegisterRequest({ fullName, email, password });
 
-    this.authService.register(request).pipe(
-      finalize(() => {
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      })
-    ).subscribe({
-      next: (res: AuthResult) => {
-        if (res.success === true) {
-          this.successMessage = 'Registration successful! Redirecting...';
-          this.router.navigate(['/login']);
-        }
-        else {
-          this.errorMessage = res?.message || 'Registration failed';
-        }
-      },
-      error: (apiError: AuthResult) => {
-        if (apiError?.errors?.length) {
-          this.applyServerErrors(apiError.errors);
-        } else {
-          this.errorMessage = apiError?.message || 'Registration failed';
-        }
-      }
-    });
+    this.authService
+      .register(request)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (res: AuthResult) => {
+          if (res.success === true) {
+            this.successMessage = 'Registration successful! Redirecting...';
+            this.router.navigate(['/login']);
+          } else {
+            this.errorMessage = res?.message || 'Registration failed';
+          }
+        },
+        error: (apiError: AuthResult) => {
+          if (apiError?.errors?.length) {
+            this.applyServerErrors(apiError.errors);
+          } else {
+            this.errorMessage = apiError?.message || 'Registration failed';
+          }
+        },
+      });
   }
 
   private applyServerErrors(errors: AuthError[]) {
@@ -112,7 +111,7 @@ export class RegisterComponent implements OnInit {
     let emailError: string | null = null;
 
     for (const err of errors) {
-      if(err && err.code && err.description){
+      if (err && err.code && err.description) {
         if (err?.code?.startsWith('Password')) {
           passwordErrors.push(err?.description);
         }
@@ -134,9 +133,44 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  private clearServerError(control: AbstractControl | null) {
-    if (!control?.errors?.['server']) return;
-    const { server, ...rest } = control.errors;
-    control.setErrors(Object.keys(rest).length ? rest : null);
+  private clearServerError(control: AbstractControl | null): void {
+    if (!control) return;
+
+    const errors: ValidationErrors | null = control.errors;
+
+    if (!errors || !('server' in errors)) return;
+
+    const remainingErrors: ValidationErrors = { ...errors };
+    delete remainingErrors['server'];
+
+    control.setErrors(Object.keys(remainingErrors).length > 0 ? remainingErrors : null);
+  }
+
+  get confirmPasswordErrors(): ValidationErrors | null {
+    return this.confirmPassword?.errors ?? null;
+  }
+
+  get confirmPasswordTouched(): boolean {
+    return this.confirmPassword?.touched ?? false;
+  }
+
+  get emailErrors(): ValidationErrors | null {
+    return this.email?.errors ?? null;
+  }
+
+  get passwordErrors(): ValidationErrors | null {
+    return this.password?.errors ?? null;
+  }
+
+  get emailTouched(): boolean {
+    return this.email?.touched ?? false;
+  }
+
+  get passwordTouched(): boolean {
+    return this.password?.touched ?? false;
+  }
+
+  get passwordServerErrors(): string[] {
+    return this.password?.errors?.['server'] ?? [];
   }
 }

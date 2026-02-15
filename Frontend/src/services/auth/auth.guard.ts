@@ -13,17 +13,17 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   return authService.isAuthenticated$.pipe(
     take(1),
-    map(isAuthenticated => {
+    map((isAuthenticated) => {
       if (isAuthenticated) {
         return true;
       } else {
         // Redirect to login page, preserving the attempted URL
-        router.navigate(['/login'], { 
-          queryParams: { returnUrl: state.url } 
+        router.navigate(['/login'], {
+          queryParams: { returnUrl: state.url },
         });
         return false;
       }
-    })
+    }),
   );
 };
 
@@ -31,13 +31,13 @@ export const authGuard: CanActivateFn = (route, state) => {
  * Guard to prevent authenticated users from accessing login/register pages
  * Usage in routes: canActivate: [guestGuard]
  */
-export const guestGuard: CanActivateFn = (route, state) => {
+export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
   return authService.isAuthenticated$.pipe(
     take(1),
-    map(isAuthenticated => {
+    map((isAuthenticated) => {
       if (!isAuthenticated) {
         return true;
       } else {
@@ -45,6 +45,6 @@ export const guestGuard: CanActivateFn = (route, state) => {
         router.navigate(['/']);
         return false;
       }
-    })
+    }),
   );
 };

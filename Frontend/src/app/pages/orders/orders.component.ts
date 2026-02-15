@@ -2,8 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
-import { ApiClient, BasketItem } from '../../api/generated-api-client';
-import { BasketStateService } from '../../../services/BasketStateService';
 
 // TODO: Replace with your actual Order model from API client
 interface Order {
@@ -25,23 +23,19 @@ interface OrderItem {
   selector: 'app-orders',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './orders.component.html'
+  templateUrl: './orders.component.html',
 })
 export class OrdersComponent implements OnInit {
   private authService = inject(AuthService);
-  private basketStateService = inject(BasketStateService);
   orders: Order[] = [];
   isLoading = true;
   isAuthenticated = false;
 
-  constructor(private apiClient: ApiClient) {}
-
-
   ngOnInit(): void {
     // Check if user is authenticated
-    this.authService.isAuthenticated$.subscribe(isAuth => {
+    this.authService.isAuthenticated$.subscribe((isAuth) => {
       this.isAuthenticated = isAuth;
-      
+
       if (isAuth) {
         this.loadOrders();
       } else {
@@ -70,23 +64,21 @@ export class OrdersComponent implements OnInit {
           id: '1',
           orderNumber: 'ORD-2024-001',
           date: new Date('2024-01-15'),
-          total: 70.00,
+          total: 70.0,
           status: 'delivered',
           items: [
-            { productName: 'Ceramic Coffee Mug', quantity: 2, price: 25.00 },
-            { productName: 'Handcrafted Wooden Bowl', quantity: 1, price: 45.00 }
-          ]
+            { productName: 'Ceramic Coffee Mug', quantity: 2, price: 25.0 },
+            { productName: 'Handcrafted Wooden Bowl', quantity: 1, price: 45.0 },
+          ],
         },
         {
           id: '2',
           orderNumber: 'ORD-2024-002',
           date: new Date('2024-02-01'),
-          total: 35.00,
+          total: 35.0,
           status: 'shipped',
-          items: [
-            { productName: 'Woven Basket', quantity: 1, price: 35.00 }
-          ]
-        }
+          items: [{ productName: 'Woven Basket', quantity: 1, price: 35.0 }],
+        },
       ];
       this.isLoading = false;
     }, 500);

@@ -1,0 +1,65 @@
+<form [formGroup]="form()" (ngSubmit)="onSubmit()" class="space-y-6">
+  <!-- Email Field -->
+  <div>
+    <label for="email" class="block text-sm font-medium text-gray-900 mb-2"> Email Address </label>
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+      [class.border-red-500]="email?.invalid && email?.touched"
+      placeholder="you@example.com"
+    />
+    @if (email?.invalid && email?.touched) {
+      <div class="mt-1 text-sm text-red-600">
+        @if (email?.errors?.['required']) {
+          <p>Email is required</p>
+        }
+        @if (email?.errors?.['email']) {
+          <p>Please enter a valid email address</p>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Password Field -->
+  <div>
+    <label for="password" class="block text-sm font-medium text-gray-900 mb-2"> Password </label>
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+      [class.border-red-500]="password?.invalid && password?.touched"
+      placeholder="Enter your password"
+    />
+    @if (password?.invalid && password?.touched) {
+      <div class="mt-1 text-sm text-red-600">
+        @if (password?.errors?.['required']) {
+          <p>Password is required</p>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Error Message -->
+  @if (errorMessage()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+      <p class="text-sm">{{ errorMessage() }}</p>
+    </div>
+  }
+
+  <!-- Submit Button -->
+  <button
+    type="submit"
+    [disabled]="form().invalid || isLoading()"
+    class="w-full bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+  >
+    @if (!isLoading()) {
+      <span>Sign In</span>
+    }
+    @if (isLoading()) {
+      <span>Signing in...</span>
+    }
+  </button>
+</form>

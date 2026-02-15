@@ -8,14 +8,13 @@ import { UserDto } from '../../api/generated-api-client';
   selector: 'app-account',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './account.component.html'
+  templateUrl: './account.component.html',
 })
 export class AccountComponent implements OnInit {
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   currentUser: UserDto | null = null;
   isLoading = true;
-
-  constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe({
@@ -25,16 +24,16 @@ export class AccountComponent implements OnInit {
       },
       error: () => {
         this.isLoading = false;
-      }
+      },
     });
   }
 
   onLogout(): void {
     if (confirm('Are you sure you want to log out?')) {
       this.authService.logout().subscribe(() => {
-      this.currentUser = null;
-      this.cdr.markForCheck();
-    });
+        this.currentUser = null;
+        this.cdr.markForCheck();
+      });
     }
   }
 }

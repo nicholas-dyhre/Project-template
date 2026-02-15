@@ -1,0 +1,50 @@
+{
+  "root": true,
+  "ignorePatterns": ["dist"],
+  "plugins": ["@typescript-eslint", "unicorn", "prettier", "check-file"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {
+    "prettier/prettier": "error",
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "class",
+        "format": ["PascalCase"]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/app/services/**/*.ts"],
+      "rules": {
+        "check-file/filename-naming-convention": [
+          "error",
+          {
+            "**/services/*.ts": "CAMEL_CASE"
+          }
+        ],
+        "check-file/filename-match-regex": [
+          "error",
+          {
+            "**/services/*.ts": "^[a-z][a-zA-Z0-9]*\\.service\\.ts$"
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/app/components/**/*.ts", "src/app/pages/**/*.ts"],
+      "rules": {
+        "check-file/filename-match-regex": [
+          "error",
+          {
+            "**/*": "^[a-z][a-zA-Z0-9]*\\.component\\.ts$"
+          }
+        ]
+      }
+    }
+  ]
+}

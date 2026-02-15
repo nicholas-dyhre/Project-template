@@ -1,5 +1,7 @@
-<ng-container *ngIf="basketItem() as item">
-  <div class="flex items-center justify-between bg-white p-3 rounded shadow hover:shadow-md transition-shadow duration-200">
+@if (basketItem(); as item) {
+  <div
+    class="flex items-center justify-between bg-white p-3 rounded shadow hover:shadow-md transition-shadow duration-200"
+  >
     <!-- Product Image -->
     <img
       [src]="item.product.imageUrl || 'https://via.placeholder.com/80x80?text=No+Image'"
@@ -42,12 +44,9 @@
       </div>
 
       <!-- Remove Button -->
-      <button
-        (click)="removeItem()!(item)"
-        class="text-red-600 hover:underline text-sm"
-      >
+      <button (click)="removeItem()!(item)" class="text-red-600 hover:underline text-sm">
         Remove
       </button>
     </div>
   </div>
-</ng-container>
+}
