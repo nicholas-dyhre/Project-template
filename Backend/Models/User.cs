@@ -8,7 +8,7 @@ public class User
 
     [Required, EmailAddress]
     public string Email { get; set; } = string.Empty;
-
+    
     public string Name { get; set; } = string.Empty;
 
     public ICollection<Basket> Baskets { get; set; } = new List<Basket>();

@@ -1,5 +1,5 @@
 namespace Backend.Models;
-enum PaymentStatus {
+public enum PaymentStatus {
     Pending,
     Completed,
     Failed,
