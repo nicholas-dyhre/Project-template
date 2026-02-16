@@ -7,7 +7,7 @@ public class Order
     public User? User { get; set; }
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
     public decimal Total { get; set; }
-    public string Status { get; set; } = "Pending";
+    public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public int ShippingAddressId { get; set; }
     public Address? ShippingAddress { get; set; }
     public int BillingAddressId { get; set; }
