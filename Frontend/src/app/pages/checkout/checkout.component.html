@@ -1,0 +1,66 @@
+<app-page-layout>
+  <section class="py-16 bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Checkout</h2>
+
+      <!-- Basket Items -->
+      @if (basketItems$ | async; as items) {
+        <div class="flex flex-col gap-4 mb-12">
+          @for (item of items; track item) {
+            <app-basket-item
+              [basketItem]="item"
+              [updateQuantity]="this.updateQuantity.bind(this)"
+              [removeItem]="this.removeItem.bind(this)"
+            />
+          }
+        </div>
+
+        <div class="text-right mb-12">
+          <span class="text-2xl font-bold">Total: ${{ calculateTotal(items).toFixed(2) }}</span>
+        </div>
+      }
+
+      <!-- Checkout Form -->
+      <form [formGroup]="checkoutForm" (ngSubmit)="submitCheckout()" class="space-y-8">
+        <!-- Shipping Address --> 
+        <div class="bg-white rounded-lg shadow-md p-8" formGroupName="shippingAddress">
+          <h3 class="text-xl font-semibold mb-4">Shipping Address</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input formControlName="street"  placeholder="Street" class="input" />
+            <input formControlName="city" placeholder="City" class="input" />
+            <input formControlName="state" placeholder="State" class="input" />
+            <input formControlName="zipCode" placeholder="ZIP Code" class="input" />
+            <input formControlName="country" placeholder="Country" class="input" />
+          </div>
+        </div>
+
+        <!-- Use Shipping as Billing -->
+        <div class="flex items-center space-x-4">
+          <input type="checkbox" formControlName="useShippingAsBilling" id="useShipping" />
+          <label for="useShipping">Use shipping address as billing address</label>
+        </div>
+
+        <!-- Billing Address (Conditional) -->
+         @if(!checkoutForm.value.useShippingAsBilling){
+<div class="bg-white rounded-lg shadow-md p-8" formGroupName="billingAddress">
+          <h3 class="text-xl font-semibold mb-4">Billing Address</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input formControlName="street" placeholder="Street" class="input" />
+            <input formControlName="city" placeholder="City" class="input" />
+            <input formControlName="state" placeholder="State" class="input" />
+            <input formControlName="zipCode" placeholder="ZIP Code" class="input" />
+            <input formControlName="country" placeholder="Country" class="input" />
+          </div>
+        </div>
+         }
+        
+
+        <div class="text-right">
+          <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700">
+            Complete Checkout
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+</app-page-layout>

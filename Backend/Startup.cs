@@ -26,6 +26,9 @@ namespace Backend
             services.AddTransient<IProductsService, ProductsService>();
             services.AddTransient<IBasketService, BasketService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddTransient<IOrderService, OrderService>();
+            services.AddTransient<IAddressService, AddressService>();
+            services.AddTransient<IAppUserService, AppUserService>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));

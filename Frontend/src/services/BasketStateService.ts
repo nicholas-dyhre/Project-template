@@ -8,7 +8,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import { ApiClient } from '../app/api/generated-api-client';
+import { ApiClient, CheckoutRequest, Order } from '../app/api/generated-api-client';
 import { LocalStorageService } from './localStorage.service';
 import { inject, Injectable } from '@angular/core';
 
@@ -17,6 +17,7 @@ export class BasketStateService {
   private apiClient = inject(ApiClient);
   private localStorageService = inject(LocalStorageService);
   private basketIdSubject = new BehaviorSubject<string | null>(null);
+  private refreshBasket$ = new BehaviorSubject<void>(undefined);
 
   basketId$ = this.basketIdSubject.pipe(
     switchMap((id) => {
@@ -63,17 +64,41 @@ export class BasketStateService {
     return newId;
   }
 
-  checkoutBasket(): Observable<boolean> {
+  checkoutBasket(checkoutRequest: CheckoutRequest): Observable<Order> {
     return this.basketId$.pipe(
       take(1),
-      switchMap((basketId) => this.apiClient.checkout_Checkout(basketId)),
+      switchMap((basketId) => this.apiClient.checkout_Checkout(basketId, checkoutRequest)),
       tap(() => this.clearBasket()),
     );
+  }
+
+  refresh() {
+    this.refreshBasket$.next();
   }
 
   async clearBasket() {
     this.localStorageService.RemoveBasketId();
     this.basketIdSubject.next(null);
     await this.getOrCreateBasketId();
+  }
+
+  updateQuantity(productId: number, quantity: number) {
+    return this.basketId$.pipe(
+      take(1),
+      switchMap(id =>
+        this.apiClient.basket_SetProductQuantity(id!, productId, quantity)
+      ),
+      tap(() => this.refresh())
+    );
+  }
+
+  removeItem(productId: number) {
+    return this.basketId$.pipe(
+      take(1),
+      switchMap(id =>
+        this.apiClient.basket_RemoveProductFromBasket(id!, productId)
+      ),
+      tap(() => this.refresh())
+    );
   }
 }

@@ -104,7 +104,7 @@ namespace Backend.Services
             return basket.Id;
         }
 
-        public async  Task<decimal> GetBasketTotal(Guid basketId)
+        public async Task<decimal> GetBasketTotal(Guid basketId)
         {
             var basket = await _context.Baskets
                 .Include(b => b.Items)

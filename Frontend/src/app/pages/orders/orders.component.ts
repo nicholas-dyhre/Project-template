@@ -2,22 +2,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
-
-// TODO: Replace with your actual Order model from API client
-interface Order {
-  id: string;
-  orderNumber: string;
-  date: Date;
-  total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  items: OrderItem[];
-}
-
-interface OrderItem {
-  productName: string;
-  quantity: number;
-  price: number;
-}
+import { ApiClient, Order, OrderStatus, UserDto } from '../../api/generated-api-client';
+import { combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-orders',
@@ -26,82 +12,73 @@ interface OrderItem {
   templateUrl: './orders.component.html',
 })
 export class OrdersComponent implements OnInit {
+  private apiClient = inject(ApiClient);
   private authService = inject(AuthService);
   orders: Order[] = [];
   isLoading = true;
   isAuthenticated = false;
+  currentUser: UserDto | null = null;
 
   ngOnInit(): void {
-    // Check if user is authenticated
-    this.authService.isAuthenticated$.subscribe((isAuth) => {
+    combineLatest([
+      this.authService.currentUser$,
+      this.authService.isAuthenticated$
+    ]).subscribe(([user, isAuth]) => {
+
+      this.currentUser = user;
       this.isAuthenticated = isAuth;
 
-      if (isAuth) {
-        this.loadOrders();
-      } else {
+      if (!isAuth || !user) {
+        this.isLoading = false;
+        return;
+      }
+
+      if(user.identityUserId != null){
+        this.loadOrders(user.identityUserId);
+      }
+    });
+  }
+
+  loadOrders(userId: string): void {
+    this.apiClient.users_GetOrdersForUser(userId).subscribe({
+      next: (orders) => {
+        this.orders = orders || [];
+        // this.basketItems = basket.items ;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading orders', error);
         this.isLoading = false;
       }
     });
   }
 
-  loadOrders(): void {
-    // TODO: Replace with actual API call
-    // this.apiClient.get_orders().subscribe({
-    //   next: (basket) => {
-    //     this.basketItems = basket.items || [];
-    //     this.isLoading = false;
-    //   },
-    //   error: (error) => {
-    //     console.error('Error loading orders', error);
-    //     this.isLoading = false;
-    //   }
-    // });
+  // getStatusColor(status: Order['status']): OrderStatus {
+  //   switch (status) {
+  //     case OrderStatus.Delivered:
+  //       return 'bg-green-100 text-green-800';
+  //     case OrderStatus.Shipped:
+  //       return 'bg-blue-100 text-blue-800';
+  //     case OrderStatus.Processing:
+  //       return 'bg-yellow-100 text-yellow-800';
+  //     case OrderStatus.Pending:
+  //       return 'bg-gray-100 text-gray-800';
+  //     case OrderStatus.Cancelled:
+  //       return 'bg-red-100 text-red-800';
+  //     default:
+  //       return 'bg-gray-100 text-gray-800';
+  //   }
+  // }
 
-    // Mock data for demonstration
-    setTimeout(() => {
-      this.orders = [
-        {
-          id: '1',
-          orderNumber: 'ORD-2024-001',
-          date: new Date('2024-01-15'),
-          total: 70.0,
-          status: 'delivered',
-          items: [
-            { productName: 'Ceramic Coffee Mug', quantity: 2, price: 25.0 },
-            { productName: 'Handcrafted Wooden Bowl', quantity: 1, price: 45.0 },
-          ],
-        },
-        {
-          id: '2',
-          orderNumber: 'ORD-2024-002',
-          date: new Date('2024-02-01'),
-          total: 35.0,
-          status: 'shipped',
-          items: [{ productName: 'Woven Basket', quantity: 1, price: 35.0 }],
-        },
-      ];
-      this.isLoading = false;
-    }, 500);
-  }
+  readonly statusClasses: Record<OrderStatus, string> = {
+  [OrderStatus.Delivered]: 'bg-green-100 text-green-800',
+  [OrderStatus.Shipped]: 'bg-blue-100 text-blue-800',
+  [OrderStatus.Processing]: 'bg-yellow-100 text-yellow-800',
+  [OrderStatus.Pending]: 'bg-gray-100 text-gray-800',
+  [OrderStatus.Cancelled]: 'bg-red-100 text-red-800'
+};
 
-  getStatusColor(status: Order['status']): string {
-    switch (status) {
-      case 'delivered':
-        return 'bg-green-100 text-green-800';
-      case 'shipped':
-        return 'bg-blue-100 text-blue-800';
-      case 'processing':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'pending':
-        return 'bg-gray-100 text-gray-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  }
-
-  getStatusText(status: Order['status']): string {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  }
+  // getStatusText(status: Order['status']): string {
+  //   return status.charAt(0).toUpperCase() + status.slice(1);
+  // }
 }

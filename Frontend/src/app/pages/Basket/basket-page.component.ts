@@ -74,10 +74,10 @@ export class BasketPage {
       });
   }
 
-  async checkout() {
-    this.basketStateService.checkoutBasket().subscribe({
-      next: () => alert('Checkout successful!'),
-      error: (err) => alert('Checkout failed: ' + err),
-    });
-  }
+  // async checkout() {
+  //   this.basketStateService.checkoutBasket().subscribe({
+  //     next: () => alert('Checkout successful!'),
+  //     error: (err) => alert('Checkout failed: ' + err),
+  //   });
+  // }
 }

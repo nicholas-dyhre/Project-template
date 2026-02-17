@@ -449,8 +449,8 @@
         }
       }
     },
-    "/api/Checkout/{basketId}": {
-      "get": {
+    "/api/Checkout/{basketId}/checkout": {
+      "post": {
         "tags": [
           "Checkout"
         ],
@@ -467,13 +467,57 @@
             "x-position": 1
           }
         ],
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Order/{orderId}": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "operationId": "Order_GetOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
                 }
               }
             }
@@ -639,6 +683,41 @@
           }
         }
       }
+    },
+    "/api/Users/{userId}/orders": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "Users_GetOrdersForUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Order"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -685,7 +764,7 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "id": {
+          "identityUserId": {
             "type": "string"
           },
           "email": {
@@ -966,6 +1045,325 @@
           "name": {
             "type": "string",
             "minLength": 1
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "orderDate",
+          "total",
+          "status",
+          "billingAddressId",
+          "billingAddress",
+          "items"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "userId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "user": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AppUser"
+              }
+            ]
+          },
+          "orderDate": {
+            "type": "string",
+            "format": "date-time",
+            "minLength": 1
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "shippingAddressId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "shippingAddress": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              }
+            ]
+          },
+          "billingAddressId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "billingAddress": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "payment": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Payment"
+              }
+            ]
+          }
+        }
+      },
+      "AppUser": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "email",
+          "name",
+          "basket"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "identityUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "basket": {
+            "$ref": "#/components/schemas/Basket"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "billingAddress": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              }
+            ]
+          },
+          "shippingAddress": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              }
+            ]
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "street",
+          "city",
+          "state",
+          "zipCode",
+          "country"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "street": {
+            "type": "string",
+            "minLength": 1
+          },
+          "city": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "zipCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "country": {
+            "type": "string",
+            "minLength": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Processing",
+          "Shipped",
+          "Delivered",
+          "Cancelled"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "OrderItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "orderId",
+          "productId",
+          "product",
+          "quantity",
+          "price"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "orderId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "method": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "transactionId": {
+            "type": "string"
+          }
+        }
+      },
+      "PaymentStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Completed",
+          "Failed",
+          "Refunded"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "CheckoutRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "identityUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "billingAddress": {
+            "$ref": "#/components/schemas/AddressDto"
+          }
+        }
+      },
+      "AddressDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "zipCode": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
           }
         }
       }

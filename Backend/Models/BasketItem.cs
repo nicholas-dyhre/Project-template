@@ -20,4 +20,16 @@ public class BasketItem
     public virtual Basket Basket { get; set; } = null!;
     [Required]
     public virtual Product Product { get; set; } = null!;
+
+    public OrderItem ToOrderItem(Guid orderId)
+    {
+        return new OrderItem
+        {
+            OrderId = orderId,
+            ProductId = this.Product.Id,
+            Product = this.Product,
+            Quantity = this.Quantity,
+            Price = this.Product.Price
+        };
+    }
 }

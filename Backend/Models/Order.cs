@@ -1,17 +1,31 @@
-namespace Backend.Models;
+using Backend.Models;
+using System.ComponentModel.DataAnnotations;
 
 public class Order
 {
-    public int Id { get; set; }
-    public int UserId { get; set; }
-    public User? User { get; set; }
+    [Required]
+    public Guid Id { get; set; }
+
+    public Guid? UserId { get; set; }
+    public AppUser? User { get; set; }
+
+    [Required]
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
+    [Required]
     public decimal Total { get; set; }
+    [Required]
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
-    public int ShippingAddressId { get; set; }
+
+    public Guid ShippingAddressId { get; set; }
     public Address? ShippingAddress { get; set; }
-    public int BillingAddressId { get; set; }
-    public Address? BillingAddress { get; set; }
+
+    [Required]
+    public Guid BillingAddressId { get; set; }
+    [Required]
+    public Address BillingAddress { get; set; }
+
+    [Required]
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+
     public Payment? Payment { get; set; }
 }

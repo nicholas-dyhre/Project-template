@@ -3,7 +3,7 @@ import { HomePage } from './pages/home/home-page.component';
 import { DetailPage } from './pages/detail/detail-page.component';
 import { AboutPage } from './pages/about/about-page.component';
 import { ContactPage } from './pages/contact/contact-page.component';
-import { BasketPage } from './pages/Basket/basket-page.component';
+import { BasketPage } from './pages/basket/basket-page.component';
 import { authGuard, guestGuard } from '../services/auth/auth.guard';
 
 export const routes: Routes = [
@@ -34,4 +34,9 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/orders/orders.component').then((m) => m.OrdersComponent),
   },
+  {
+    path: 'checkout',
+    // canActivate: [guestGuard, authGuard],
+    loadComponent: () => import('./pages/checkout/checkout.component').then((m) => m.CheckoutComponent)
+  }
 ];

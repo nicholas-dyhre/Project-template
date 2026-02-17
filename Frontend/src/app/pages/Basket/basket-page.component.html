@@ -8,7 +8,7 @@
             <div class="w-full">
               <app-basket-item
                 [basketItem]="item"
-                [removeItem]="removeItem.bind(this)"
+                [removeItem]="removeItem.bind(this)" 
                 [updateQuantity]="updateQuantity.bind(this)"
               />
             </div>
@@ -20,8 +20,9 @@
           <span class="text-2xl font-bold text-gray-900">
             Total: ${{ calculateTotal(basketItems).toFixed(2) }}
           </span>
+          <!-- (click)="checkout()" -->
           <button
-            (click)="checkout()"
+            [routerLink]="['/checkout']"
             class="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors duration-200"
           >
             Proceed to Checkout
