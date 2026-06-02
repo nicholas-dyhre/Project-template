@@ -4,7 +4,7 @@
       <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Checkout</h2>
 
       <!-- Basket Items -->
-      @if (basketItems$ | async; as items) {
+      @if (basketItems(); as items) {
         <div class="flex flex-col gap-4 mb-12">
           @for (item of items; track item) {
             <app-basket-item

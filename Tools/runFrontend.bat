@@ -1,3 +1,0 @@
-echo Running the frontend...
-cd frontend
-npm start

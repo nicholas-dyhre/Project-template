@@ -1,6 +1,5 @@
 import { Component, inject, input } from '@angular/core';
 import { BasketItem } from '../../api/generated-api-client';
-import { BehaviorSubject } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BasketStateService } from '../../../services/basketStateService';
@@ -19,5 +18,4 @@ export class BasketItemComponent {
   private basketStateService = inject(BasketStateService);
 
   basketId$ = this.basketStateService.basketId$;
-  refreshBasket$ = new BehaviorSubject<void>(undefined);
 }

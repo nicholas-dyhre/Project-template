@@ -27,10 +27,10 @@
 	  <Folder Include="Utils\" />
 	</ItemGroup>
 
-	<Target Name="NSwag" AfterTargets="PostBuildEvent" Condition="Exists('nswag.json')">
+	<!--<Target Name="NSwag" AfterTargets="PostBuildEvent" Condition="Exists('nswag.json')">
 		<Exec Command="$(NSwagExe_Net100) run nswag.json" WorkingDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
-	
+	-->
 	<!--
 	<Target Name="NSwag" AfterTargets="PostBuildEvent">
 		<Exec EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" Command="$(NSwagExe) aspnetcore2openapi /assembly:$(TargetDir)MyWebAssembly.dll /output:swagger.json" />

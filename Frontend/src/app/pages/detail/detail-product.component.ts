@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 import { Product } from '../../api/generated-api-client';
 import { CommonModule } from '@angular/common';
 import { AsyncButtonComponent } from './async-button.component';
-import { Observable } from 'rxjs';
 
 export type FlyState = 'idle' | 'waiting' | 'success' | 'fail';
 
@@ -14,7 +13,7 @@ export type FlyState = 'idle' | 'waiting' | 'success' | 'fail';
 })
 export class DetailProduct {
   // Signals for inputs
-  product$ = input<Observable<Product>>();
+  product = input<Product | null>();
   addToBasket = input<(productId: number) => Promise<void>>();
   handleClick = input<(() => void) | undefined>();
 

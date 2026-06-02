@@ -32,7 +32,7 @@ namespace Backend.Controllers
             [FromBody] CheckoutRequest request)
         {
             // If user is authenticated, get userId from claims instead
-            string? identityUserId = request.identityUserId;
+            string? IdentityUserId = request.IdentityUserId;
 
             var shippingAddress =
                 await _addressService.GetOrCreateAddressAsync(request.ShippingAddress);
@@ -50,9 +50,9 @@ namespace Backend.Controllers
                 return BadRequest("Order couldn't be created");
             }
 
-            if(identityUserId != null) // Save new address to user
+            if(IdentityUserId != null) // Save new address to user
             {
-                await _appUserService.AddAddressToUser(identityUserId, shippingAddress, billingAddress);
+                await _appUserService.AddAddressToUser(IdentityUserId, shippingAddress, billingAddress);
             }
 
             await _basketService.DeleteBasketAsync(basketId);

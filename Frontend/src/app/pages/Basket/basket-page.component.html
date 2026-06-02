@@ -2,7 +2,7 @@
   <section class="py-16 bg-gray-50 min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Your Basket</h2>
-      @if (basketItems$ | async; as basketItems) {
+      @if (basketItems(); as basketItems) {
         <div class="flex flex-col gap-4">
           @for (item of basketItems; track item) {
             <div class="w-full">

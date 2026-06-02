@@ -3,8 +3,8 @@ import { PageLayout } from '../../components/page-layout/page-layout.component';
 import { HomeHero } from './home-hero.component';
 import { HomeProducts } from './home-products.component';
 import { HomeAbout } from './home-about.component';
-import { ApiClient, IProduct } from '../../api/generated-api-client';
-import { Observable } from 'rxjs';
+import { IProduct } from '../../api/generated-api-client';
+import { ProductsService } from '../../../services/products.service';
 
 @Component({
   selector: 'app-home-page',
@@ -12,10 +12,11 @@ import { Observable } from 'rxjs';
   templateUrl: './home-page.component.html',
 })
 export class HomePage implements OnInit {
-  private apiClient = inject(ApiClient);
-  products$!: Observable<IProduct[]>;
+  private productsService = inject(ProductsService);
+
+  products = this.productsService.products;
 
   ngOnInit() {
-    this.products$ = this.apiClient.products_GetProducts();
+    void this.productsService.loadAll();
   }
 }
